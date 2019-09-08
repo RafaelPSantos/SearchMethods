@@ -81,8 +81,8 @@ class Vertex:
                 continue
             for i, old_vertex in enumerate(ordened_connected_vertices):
 
-                old_cost = self.comon_edge_with(old_vertex).cost()
-                new_cost = self.comon_edge_with(vertex).cost()
+                old_cost = self.comon_edge_with(old_vertex).cost
+                new_cost = self.comon_edge_with(vertex).cost
 
                 cheaper = new_cost < old_cost
                 same_price = new_cost == old_cost

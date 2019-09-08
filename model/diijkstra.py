@@ -27,7 +27,7 @@ class Diijkstra(SearchMethod):
         for vertex_connected in vertex.all_ordened_vertex_connected():
             vertex_connected_map = self.map_of_vertex(vertex_connected)
             if not vertex_connected_map.locked:
-                new_esmation = vertex_map.estimation + vertex.comon_edge_with(vertex_connected).cost()
+                new_esmation = vertex_map.estimation + vertex.comon_edge_with(vertex_connected).cost
                 current_estimation = vertex_connected_map.estimation
                 if not isinstance(current_estimation, numbers.Real) or new_esmation < current_estimation:
                     vertex_connected_map.estimation = new_esmation
