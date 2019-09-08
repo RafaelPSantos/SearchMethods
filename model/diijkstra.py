@@ -1,7 +1,8 @@
 import numbers
-from search_method import SearchMethod
-from diijkstra_vertex_map import DiijkstraVertexMap
-from vertex import Vertex
+
+from .search_method import SearchMethod
+from .diijkstra_vertex_map import DiijkstraVertexMap
+from .vertex import Vertex
 
 class Diijkstra(SearchMethod):
     def __init__(self, entrance, target, vertices):

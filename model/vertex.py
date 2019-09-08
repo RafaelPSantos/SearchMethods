@@ -1,4 +1,4 @@
-from edge import Edge
+from .edge import Edge
 
 class Vertex:
     def __init__(self, name, pos_x, pos_y, line, column, radio):
@@ -10,6 +10,14 @@ class Vertex:
         self.radio = radio
         self.edges = []
         self.selected = False
+        self.entrace = False
+        self.target = False
+
+    def mark_as_target(self, is_target):
+        self.target = is_target
+
+    def mark_as_entrace(self, is_entrace):
+        self.entrace = is_entrace
 
     def add_edge(self, new_edge):
         self.edges.append(new_edge)

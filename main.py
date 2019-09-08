@@ -2,16 +2,18 @@ import pygame
 import string
 import math
 
-from edge import Edge
-from vertex import Vertex
-from diijkstra import Diijkstra
+from model.vertex import Vertex
+from model.edge import Edge
+from model.diijkstra import Diijkstra
+from model.instructions_screen import InstructionsScreen
+
+CAPTION = "Search Methods"
 
 MINIMUN_ARRAY_SIZE = 2
 MAX_ARRAY_SIZE = 6
 
 MOUSE_LEFT_BUTTON = 1
 MOUSE_RIGHT_BUTTON = 3
-
 
 BLACK = (0, 0, 0)
 GREY = (100, 100, 100)
@@ -28,19 +30,6 @@ VERTEX_RADIO = 18
 VERTEX_NAME_SIZE = VERTEX_RADIO
 VERTEX_DISTANCE = 80
 
-INSTRUCTION_OF_SIZE = ["Olá e bem vindo ao SearchMethods,", \
-                       "um aplciativo para demonstrar diferentes metodos de procura.", \
-                       "Você pode seguir para a proxima etapa a qualquer hora, pressionando a tecla ENTER,",\
-                       "mas se preferir, pode ler instruções importantes logo abaixo:",\
-                       "1 - Na proxima tela, você poderá determinar o tamanho da matriz de vertices arrastando o mouse,",\
-                       "pela tela até o tamanho que quiser contanto que seja uma matriz maior ou igual a 2x2 ou",\
-                       "pela tela até o tamanho que quiser contanto que seja uma matriz menor ou igual a 6x6.",\
-                       "2 - Após ficar satisfeito com o tamanho da matriz, click com o mesmo,",\
-                       " mouse em qualquer canto da tela e a matriz será salva e você irá para aproxima etapa,",\
-                       "onde poderá determinar as arestas entre os vertices", \
-                       "3 - Após determinar as arrestas, clique com o botão direito do mouse sobre a entrada e a saida",\
-                        "da matriz e então, pressione de uma das teclas de 1-8 para escolher o metodo de busca"]
-
 vertices = []
 entrace = None
 target = None
@@ -51,14 +40,41 @@ def main():
     pygame.font.init()
 
     display = pygame.display
-    display.set_caption("Search Methods")
+    display.set_caption(CAPTION)
 
     screen = display.set_mode(SCREEN_SIZE, 0, 32)
 
     initialize_vertex()
 
     running = True
-    current_screen = 1
+    current_screen = 0
+
+    instructions_title = "Bem Vindo ao " + CAPTION
+    paragraphs = []
+    paragraphs.append("")
+    paragraphs.append("O " + CAPTION +" é um programa para demonstrar diferentes metodos de busca.")
+    paragraphs.append("Nele você poderá definir os vertices e as aresta que quiser, bem como o inicio e fim.")
+    paragraphs.append("")
+    paragraphs.append("Você pode prosseguir para proma tela a hora que quiser, basta pressionar ENTER.")
+    paragraphs.append("Mas caso queira, tambem pode ficar aqui mais um pouco e ler as instruções:")
+    paragraphs.append("")
+    paragraphs.append("1.1 - Na proxima tela, você irá se deparar com a tela para decidir o tamanho da matriz")
+    paragraphs.append("1.2 - Para decidir o tamanho da matriz, basta arastar o mouse até o canto direito inferior,")
+    paragraphs.append("e, dependendo quando estiver satisfeito com o tamanho, clique com o botão esquerdo")
+    paragraphs.append("2.1 - Na proxima tela, você poderá decidir as arestas bem como o ponto inicial e final")
+    paragraphs.append("2.2 - Para criar uma aresta, clique sobre um vertice e depois sobre outro proximo,")
+    paragraphs.append("quando você clicar sobre um vertice, notará a mudança de cor dos demais.")
+    paragraphs.append("* os vertices brancos, são os que é possivel criar uma aresta em comum")
+    paragraphs.append("* os vertices cinzas, estão muito longes para se criar uma aresta")
+    paragraphs.append("* os vertices laranjas, ja possuem aresta e clicando sobre eles, irá remover a mesma")
+    paragraphs.append("2.2 - Para escolher o ponto de inicio, e fim, clique usando o botão direito do mouse")
+    paragraphs.append("* o vertice verde será o inicio da procura")
+    paragraphs.append("* o vertice azul será o destino da procura")
+    paragraphs.append("3.1 - Quando quiser iniciar a procura, pressione o botão 1, e sera feita utilizando:")
+    paragraphs.append("Diijkstra")
+
+    instructions_screen = InstructionsScreen(pygame.font, screen)
+    instructions_screen.add_text(instructions_title, paragraphs)
 
     while running:
         screen.fill(BLACK)
@@ -83,15 +99,12 @@ def main():
                     start_to_search()
 
         if current_screen == 0:
-            open_screen(screen)
+            instructions_screen.draw()
         elif current_screen == 1:
             define_matrix_screen(screen)
         elif current_screen == 2:
             define_edges_screen(screen)
         display.flip()
-
-def open_screen(screen):
-    draw_instructions(screen, INSTRUCTION_OF_SIZE)
 
 def define_matrix_screen(screen):
     draw_vertex(screen)
@@ -136,17 +149,6 @@ def draw_edges(screen):
         if edge.first_vertex.selected or edge.second_vertex.selected:
             color = ORANGE
         pygame.draw.line(screen, color, edge.start(), edge.end(), 5)
-
-
-def draw_instructions(screen, instructions):
-    initial_pos = 20
-    for instruction in instructions:
-        monospace_font = pygame.font.SysFont("arial", 15)
-        label = monospace_font.render(instruction, 1, WHITE)
-        text_size = label.get_rect()
-        text_pos = (SCREEN_SIZE[0]/2 - text_size.width/2, initial_pos)
-        screen.blit(label, text_pos)
-        initial_pos += text_size[1] + 20
 
 def define_edges(pos_x, pos_y):
     selected_vertices = []
