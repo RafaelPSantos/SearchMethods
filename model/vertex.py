@@ -10,14 +10,33 @@ class Vertex:
         self.radio = radio
         self.edges = []
         self.selected = False
+        self.path = False
         self.entrace = False
         self.target = False
 
-    def mark_as_target(self, is_target):
-        self.target = is_target
+    def is_target(self):
+        return self.target
 
-    def mark_as_entrace(self, is_entrace):
-        self.entrace = is_entrace
+    def mark_as_target(self):
+        self.target = True
+
+    def unmark_as_target(self):
+        self.target = False
+
+    def is_entrace(self):
+        return self.entrace
+
+    def mark_as_entrace(self):
+        self.entrace = True
+
+    def unmark_as_entrace(self):
+        self.entrace = False
+
+    def mark_as_part_of_path(self):
+        self.path = True
+
+    def is_part_of_path(self):
+        return self.path
 
     def add_edge(self, new_edge):
         self.edges.append(new_edge)

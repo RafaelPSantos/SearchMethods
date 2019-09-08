@@ -58,7 +58,7 @@ class Diijkstra(SearchMethod):
 
 
     def select_prescient_of(self, vertex_map):
-        vertex_map.vertex.selected = True
+        vertex_map.vertex.mark_as_part_of_path()
         if not vertex_map.prescient is vertex_map:
             self.select_prescient_of(vertex_map.prescient)
 
