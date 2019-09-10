@@ -15,13 +15,13 @@ class Matrix():
         self.vertices = []
         self.edges = []
         self.normal_color = (255, 255, 255)
-        self.disabled = (100, 100, 100)
+        self.disabled_color = (100, 100, 100)
         self.selected_color = (255, 255, 0)
         self.connected_color = (255, 100, 0)
         self.target_color = (0, 0, 255)
-        self.entrace = (0, 255, 0)
-        self.name_color = (255, 0, 0)
+        self.entrace_color = (0, 255, 0)
         self.path_color = (255, 0, 255)
+        self.name_color = (255, 0, 0)
         self.line_count = line_count
         self.column_count = column_count
 
@@ -53,14 +53,14 @@ class Matrix():
             if vertex.selected:
                 color = self.selected_color
             elif vertex.is_entrace():
-                color = self.entrace
+                color = self.entrace_color
             elif vertex.is_target():
                 color = self.target_color
             elif vertex.is_part_of_path():
                 color = self.path_color
             elif type(first_selected) is Vertex:
-                if not first_selected.is_directly_neighbor_of(vertex):
-                    color = self.disabled
+                if not self.are_neighbors(first_selected, vertex):
+                    color = self.disabled_color
                 elif vertex.is_conected_to(first_selected):
                     color = self.connected_color
             vertex_pos = (vertex.pos_x, vertex.pos_y)
@@ -145,7 +145,7 @@ class Matrix():
                 selected_vertices.append(vertex)
         if len(selected_vertices) >= 2:
             first_vertex, second_vertex = selected_vertices
-            if first_vertex.is_directly_neighbor_of(second_vertex):
+            if self.are_neighbors(first_vertex, second_vertex):
                 comon_edge = first_vertex.comon_edge_with(second_vertex)
                 if type(comon_edge) is Edge:
                     first_vertex.remove_edge(comon_edge)
@@ -186,3 +186,10 @@ class Matrix():
         self.vertices = []
         self.initialize_vertex(self.line_count, self.column_count)
         self.edges = []
+
+    def are_neighbors(self, vertex01, vertex02):
+        horizontal_diff = abs(vertex01.line - vertex02.line)
+        vertical_diff = abs(vertex01.column - vertex02.column)
+        horizontal_neighbor = horizontal_diff < 2
+        vertical_neighbor = vertical_diff < 2
+        return horizontal_neighbor and vertical_neighbor

@@ -37,10 +37,6 @@ class InstructionsScreen():
         self.screen.blit(label, text_pos)
         return label.get_rect()
 
-
-    def key_handler(self, event):
-        pass
-
     def add_text(self, title, paragraphs):
         self.title = title
         self.paragraphs = paragraphs

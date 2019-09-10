@@ -44,13 +44,6 @@ class Vertex:
     def remove_edge(self, new_edge):
         self.edges.remove(new_edge)
 
-    def is_directly_neighbor_of(self, vertex):
-        horizontal_diff = abs(self.line - vertex.line)
-        vertical_diff = abs(self.column - vertex.column)
-        horizontal_neighbor = horizontal_diff < 2
-        vertical_neighbor = vertical_diff < 2
-        return horizontal_neighbor and vertical_neighbor
-
     def comon_edge_with(self, vertex):
         for edge in self.edges:
             if (edge.first_vertex is vertex) or (edge.second_vertex is vertex):
