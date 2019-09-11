@@ -37,9 +37,9 @@ class Diijkstra(SearchMethod):
     def next_search(self):
         first_map = None
         for vertex_map in self.vertex_maps:
-            if vertex_map.locked or not type(vertex_map.prescient) is DiijkstraVertexMap:
+            if vertex_map.locked or not isinstance(vertex_map.prescient, DiijkstraVertexMap):
                 continue
-            if not type(first_map) is DiijkstraVertexMap:
+            if not isinstance(first_map, DiijkstraVertexMap):
                 first_map = vertex_map
                 continue
             cheaper = vertex_map.estimation < first_map.estimation
@@ -59,7 +59,7 @@ class Diijkstra(SearchMethod):
 
     def select_prescient_of(self, vertex_map):
         vertex_map.vertex.mark_as_part_of_path()
-        if not vertex_map.prescient is vertex_map:
+        if vertex_map.prescient is not vertex_map:
             self.select_prescient_of(vertex_map.prescient)
 
     def map_of_vertex(self, vertex):
@@ -67,14 +67,17 @@ class Diijkstra(SearchMethod):
             if vertex_map.vertex is vertex:
                 return vertex_map
 
-    def print_table(self):
-        for vertex_map in self.vertex_maps:
-            if vertex_map.locked:
-                print("---------------------")
-                print("vetice:", vertex_map.vertex.name)
-                print("estimativa:", vertex_map.estimation)
-                print("precedente:", vertex_map.prescient.vertex.name)
-                print("fechado:", vertex_map.locked)
+    def distante_to_target(self):
+        return self.map_of_vertex(self.target).estimation
+
+    def path_to_target(self):
+        path_to_target = []
+        def add_vertex_to_path(vertex_map):
+            if vertex_map.prescient is not vertex_map:
+                add_vertex_to_path(vertex_map.prescient)
+            path_to_target.append(vertex_map.vertex)
+        add_vertex_to_path(self.map_of_vertex(self.target))
+        return path_to_target
 
 
 

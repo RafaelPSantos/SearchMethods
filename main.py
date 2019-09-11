@@ -10,8 +10,15 @@ from model.diijkstra import Diijkstra
 from model.manhattan_distance import ManhattanDistance
 from model.instructions_screen import InstructionsScreen
 from model.matrix import Matrix
+from model.tower_defense import TowerDefense
+from model.gui import Gui
 
 CAPTION = "Search Methods"
+
+INSTRUCTIONS_SCREEN = 0
+RESIZE_SCREEN = 1
+SEARCH_SCREEN = 2
+GAME_SCREEN = 3
 
 MINIMUN_ARRAY_SIZE = 2
 MAX_ARRAY_SIZE = 6
@@ -86,8 +93,15 @@ def main():
 
     matrix = Matrix(MAX_ARRAY_SIZE, MAX_ARRAY_SIZE, pygame)
 
+    gui = Gui(pygame, screen)
+    def a():
+        print("aaa")
+    gui.add_button("teste", (20, 20), (50, 15), a)
+
     while running:
-        handle_events(pygame)
+        screen.fill(BLACK)
+        gui.draw()
+        handle_events(pygame, gui)
         handle_screens(screen, display)
 
 def define_matrix_screen(screen):
@@ -97,19 +111,9 @@ def define_edges_screen(screen):
     matrix.draw_edges(screen)
     matrix.draw_vertex(screen)
 
-def start_to_search(method = 0):
-    search = Diijkstra(matrix.find_entrace_vertice(), matrix.find_target_vertice(), matrix.flat_vertices())
-    search.search_path()
-    search.select_path_to_target()
-    search.print_table()
-
-    m = ManhattanDistance(matrix.find_entrace_vertice(), matrix.find_target_vertice(), matrix.flat_vertices())
-    print(m.calculate())
-
 def handle_screens(screen, display):
     global current_screen
     global instructions_screen
-    screen.fill(BLACK)
     if current_screen == 0:
         instructions_screen.draw()
     elif current_screen == 1:
@@ -119,45 +123,52 @@ def handle_screens(screen, display):
         draw_legend(screen)
     display.flip()
 
-def handle_events(pygame):
+def handle_events(pygame, gui):
     global running
+    left_mouse_button = False
     for event in pygame.event.get():
+        left_mouse_button = event.type == pygame.MOUSEBUTTONUP and event.button == MOUSE_LEFT_BUTTON
         pressed = pygame.key.get_pressed()
         running = not (event.type == pygame.QUIT or pressed[pygame.K_ESCAPE])
         handle_mouse(pygame.mouse, event)
         handle_keys(pressed)
 
+    gui.update(left_mouse_button)
+
 def handle_mouse(mouse, event):
     global current_screen
-    if current_screen == 0:
+    if current_screen == INSTRUCTIONS_SCREEN:
         pass
-    elif current_screen == 1:
+    elif current_screen == RESIZE_SCREEN:
         matrix.define_matrix_size(mouse.get_pos())
         if event.type == pygame.MOUSEBUTTONUP:
             matrix.remove_unselected_vertices()
-            current_screen = 2
-    elif current_screen == 2:
+            current_screen = SEARCH_SCREEN
+    elif current_screen == SEARCH_SCREEN:
         if event.type == pygame.MOUSEBUTTONUP:
             if event.button == MOUSE_LEFT_BUTTON:
                 if matrix.any_vertex_bellow_mouse(event.pos[0], event.pos[1]):
                     matrix.define_edges(event.pos[0], event.pos[1])
             elif event.button == MOUSE_RIGHT_BUTTON:
                 matrix.select_targets(event.pos[0], event.pos[1])
+    elif current_screen == GAME_SCREEN:
+        pass
 
 def handle_keys(pressed):
     global current_screen
-    if current_screen == 0:
+    if current_screen == INSTRUCTIONS_SCREEN:
         if pressed[pygame.K_RETURN]:
-                    current_screen = 1
-    elif current_screen == 1:
+                    current_screen = RESIZE_SCREEN
+    elif current_screen == RESIZE_SCREEN:
         pass
-    elif current_screen == 2:
-        if pressed[pygame.K_1]:
-            start_to_search()
-        elif pressed[pygame.K_RETURN]:
+    elif current_screen == SEARCH_SCREEN:
+        if pressed[pygame.K_RETURN]:
+            start_search()
+        elif pressed[pygame.K_BACKSPACE]:
             matrix.reset()
-            current_screen = 1
-
+            current_screen = RESIZE_SCREEN
+    elif current_screen == GAME_SCREEN:
+        pass
 
 def draw_legend(screen):
     global matrix
@@ -182,6 +193,66 @@ def draw_legend_rect(screen, pos_x, pos_y, text, color, rec_side):
     text_pos = (pos_x, pos_y + rec_side)
     screen.blit(label, text_pos)
     return text_pos[1] + text_size.height
+
+
+def start_search(method = 0):
+    search = Diijkstra(matrix.find_entrace_vertice(), matrix.find_target_vertice(), matrix.flat_vertices())
+    search.search_path()
+    search.select_path_to_target()
+    manhattan = ManhattanDistance(matrix.find_entrace_vertice(), matrix.find_target_vertice(), matrix.flat_vertices())
+    print_adjacent_matrix(search.vertices)
+    print(" ")
+    print_manhatthan_distance(manhattan.calculate())
+    print(" ")
+    print("DISTÂNCIA TOTAL PERCORRIDA: " + str(search.distante_to_target()))
+    print(" ")
+    print_path(search.path_to_target())
+
+def print_adjacent_matrix(vertices):
+    print("MATRIZ DE ADJACENTES:")
+    header = "  "
+    max_space = 3
+    for vertex in vertices:
+        blank_space = max_space - len(vertex.name)
+        header += "|" + vertex.name + " " * blank_space
+    header += "|"
+    print(header)
+    for vertex_index, vertex in enumerate(vertices):
+        print("-" * len(header))
+        line = ""
+        blank_space = max_space - len(vertex.name) - 1
+        line += vertex.name + " " * blank_space
+        for other_vertex_index, other_vertex in enumerate(vertices):
+            line += "|"
+            if vertex_index <= other_vertex_index:
+                if other_vertex is vertex:
+                    line += " 0 "
+                else:
+                    if vertex.is_conected_to(other_vertex):
+                        cost = vertex.comon_edge_with(other_vertex).cost
+                        if isinstance(cost, int):
+                            line += " " + str(cost) + " "
+                        else:
+                            line += "%.1f" % cost
+                    else:
+                        line += " 0 "
+            else:
+                line += "   "
+        line += "|"
+        print(line)
+
+def print_manhatthan_distance(distance):
+    print("DISTÂNCIA MANHATTHAN: " + str(distance))
+
+def print_path(vertices):
+    print("CAMINHO DO COMEÇO AO FIM:")
+    line = ""
+    for vertex in vertices:
+        line += " -> " + vertex.name
+    print(line)
+
+def start_game():
+    game = TowerDefense()
 
 if __name__=="__main__":
     main()

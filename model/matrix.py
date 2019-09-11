@@ -140,7 +140,7 @@ class Matrix():
         for vertex in self.flat_vertices():
             distance = math.sqrt((pos_x - vertex.pos_x) ** 2 + (pos_y - vertex.pos_y) ** 2)
             if distance <= vertex.radio:
-                vertex.selected = True
+                vertex.selected = not vertex.selected
             if vertex.selected:
                 selected_vertices.append(vertex)
         if len(selected_vertices) >= 2:
