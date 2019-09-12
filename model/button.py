@@ -11,6 +11,7 @@ class Button():
         self.bellow_mouse = False
 
     def click(self):
+        self.bellow_mouse = False
         self.action()
 
     def draw(self, screen):

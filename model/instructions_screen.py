@@ -1,42 +1,27 @@
-class InstructionsScreen():
+from .default_screen import Screen
 
-    TITLE_SIZE = 20
-    BODY_SIZE = 15
+class InstructionsScreen(Screen):
+    def __init__(self, pygame, screen_size, settings):
+        super().__init__(pygame)
+        center = screen_size[0] / 2
+        pos = [center, 200]
 
-    def __init__(self, font, screen, text_color = (255, 255, 255)):
-        self.font = font
-        self.title = ""
-        self.paragraphs = []
-        self.text_color = text_color
-        self.screen = screen
+        def start_game():
+            settings["current_screen"] += 1
 
-    def update(self):
-        pass
+        def quit_game():
+            settings["running"] = False
 
-    def draw(self):
-        title_font = self.font.SysFont("arial", InstructionsScreen.TITLE_SIZE)
-        body_font = self.font.SysFont("arial", InstructionsScreen.BODY_SIZE)
+        self.add_label("SEARCH METHODS TD", Screen.TITLE_SIZE, pos)
+        self.add_button("Começar", start_game, pos)
+        self.add_button("Configurações", 1, pos)
+        self.add_button("Sair", quit_game, pos)
+        self.add_label("Criado por Rafael Pereira e Caio Santos", 12, [0, screen_size[1] - 14], False)
 
-        width, height = self.screen.get_size()
 
-        margim = 20
-        current_height = margim
+    def update(self, event):
+        left_mouse_clicked = event.type == self.mouse_button_up and event.button == Screen.MOUSE_LEFT_BUTTON
+        self.gui.update(left_mouse_clicked)
 
-        current_height += self.draw_text(self.title, title_font, margim, current_height)[1] + margim
-
-        for paragraph in self.paragraphs:
-            current_height += self.draw_text(paragraph, body_font, margim, current_height)[1] + margim
-
-    def draw_text(self, text, font, pos_x, pos_y):
-        max_width = self.screen.get_size()[1]
-        label = font.render(text, 1, self.text_color)
-        text_pos = (pos_x, pos_y)
-
-        bigger_than_screen = max_width < label.get_rect()[1]
-
-        self.screen.blit(label, text_pos)
-        return label.get_rect()
-
-    def add_text(self, title, paragraphs):
-        self.title = title
-        self.paragraphs = paragraphs
+    def draw(self, screen):
+        self.gui.draw(screen)

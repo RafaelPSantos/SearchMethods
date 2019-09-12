@@ -1,0 +1,10 @@
+class Color():
+    NORMAL_COLOR = (255, 255, 255)
+    DISABLED_COLOR = (100, 100, 100)
+    SELECTED_COLOR = (255, 255, 0)
+    CONNECTED_COLOR = (255, 100, 0)
+    TARGET_COLOR = (0, 0, 255)
+    ENTRACE_COLOR = (0, 255, 0)
+    PATH_COLOR = (255, 0, 255)
+    NAME_COLOR = (255, 0, 0)
+    

@@ -1,8 +1,9 @@
 import string
 import math
 
-from model.vertex import Vertex
-from model.edge import Edge
+from .vertex import Vertex
+from .edge import Edge
+from .color import Color
 
 class Matrix():
 
@@ -14,28 +15,21 @@ class Matrix():
         self.pygame = pygame
         self.vertices = []
         self.edges = []
-        self.normal_color = (255, 255, 255)
-        self.disabled_color = (100, 100, 100)
-        self.selected_color = (255, 255, 0)
-        self.connected_color = (255, 100, 0)
-        self.target_color = (0, 0, 255)
-        self.entrace_color = (0, 255, 0)
-        self.path_color = (255, 0, 255)
-        self.name_color = (255, 0, 0)
         self.line_count = line_count
         self.column_count = column_count
 
         self.initialize_vertex(line_count, column_count)
 
     def initialize_vertex(self, line_count, column_count, with_name = False):
+        self.vertices = []
         for line in range(line_count):
             new_line = []
             for column in range(column_count):
                 name = ""
                 if with_name:
                     name = Vertex.generate_a_name(string.ascii_uppercase, line + column * line_count)
-                pos_x = (1 + line) * Matrix.VERTEX_DISTANCE + 60
-                pos_y = (1 + column) * Matrix.VERTEX_DISTANCE + 60
+                pos_x = (1 + line) * Matrix.VERTEX_DISTANCE
+                pos_y = (1 + column) * Matrix.VERTEX_DISTANCE
                 new_line.append(Vertex(name, pos_x, pos_y, line, column, Matrix.VERTEX_RADIO))
             self.vertices.append(new_line)
 
@@ -49,35 +43,35 @@ class Matrix():
                 break
 
         for vertex in self.flat_vertices():
-            color = self.normal_color
+            color = Color.NORMAL_COLOR
             if vertex.selected:
-                color = self.selected_color
+                color = Color.SELECTED_COLOR
             elif vertex.is_entrace():
-                color = self.entrace_color
+                color = Color.ENTRACE_COLOR
             elif vertex.is_target():
-                color = self.target_color
+                color = Color.TARGET_COLOR
             elif vertex.is_part_of_path():
-                color = self.path_color
+                color = Color.PATH_COLOR
             elif type(first_selected) is Vertex:
                 if not self.are_neighbors(first_selected, vertex):
-                    color = self.disabled_color
+                    color = Color.DISABLED_COLOR
                 elif vertex.is_conected_to(first_selected):
-                    color = self.connected_color
+                    color = Color.CONNECTED_COLOR
             vertex_pos = (vertex.pos_x, vertex.pos_y)
             self.pygame.draw.circle(screen, color, vertex_pos, vertex.radio)
 
-            label = monospace_font.render(vertex.name, 1, self.name_color)
+            label = monospace_font.render(vertex.name, 1, Color.NAME_COLOR)
             text_size = label.get_rect()
             text_pos = (vertex.pos_x - text_size.width/2, vertex.pos_y - text_size.height/2)
             screen.blit(label, text_pos)
 
     def draw_edges(self, screen):
         for edge in self.edges:
-            color = self.normal_color
+            color = Color.NORMAL_COLOR
             if edge.first_vertex.selected or edge.second_vertex.selected:
-                color = self.connected_color
+                color = Color.CONNECTED_COLOR
             elif edge.first_vertex.is_part_of_path() and edge.second_vertex.is_part_of_path():
-                color = self.path_color
+                color = Color.PATH_COLOR
             self.pygame.draw.line(screen, color, edge.start(), edge.end(), 5)
 
     def find_target_vertice(self):
@@ -112,25 +106,6 @@ class Matrix():
             for line in range(len(self.vertices[column])):
                 flatted_list.append(self.vertices[line][column])
         return flatted_list
-
-    def remove_unselected_vertices(self):
-        new_list = []
-        column = self.vertices[0]
-        side_size = 0
-        for vertex in column:
-            if not vertex.selected:
-                break
-            side_size += 1
-        self.vertices = []
-        self.initialize_vertex(side_size, side_size, True)
-
-    def define_matrix_size(self, mouse_pos):
-        mouse_pos_x, mouse_pos_y = mouse_pos
-        min_pos = min(mouse_pos_x, mouse_pos_y)
-        for vertex in self.flat_vertices():
-            horizontal_range = vertex.pos_x - vertex.radio < min_pos
-            vertical_range = vertex.pos_y - vertex.radio < min_pos
-            vertex.selected = (horizontal_range and vertical_range) or (vertex.line < 2 and vertex.column < 2)
 
     def define_edges(self, pos_x, pos_y):
         selected_vertices = []

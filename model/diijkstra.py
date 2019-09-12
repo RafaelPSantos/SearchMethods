@@ -15,12 +15,16 @@ class Diijkstra(SearchMethod):
                 new_map.estimation = 0
                 new_map.prescient = new_map
 
+    # this method start to search for the shorter path from entrace to target vertex
     def search_path(self):
         map_to_search = self.map_of_vertex(self.entrance)
         while type(map_to_search) is DiijkstraVertexMap:
             self.search_paths_of_map(map_to_search)
             map_to_search = self.next_search()
 
+    # this method search for all other vertex conected to the param vertex_map and estimate their paths
+    # if the current path is lower that the new estimation, it will keep the old one,
+    # other wise will change for the new current estimation for the new one
     def search_paths_of_map(self, vertex_map):
         vertex_map.lock()
         vertex = vertex_map.vertex
@@ -34,6 +38,8 @@ class Diijkstra(SearchMethod):
                     vertex_connected_map.prescient = vertex_map
                     vertex_connected_map.locked = False
 
+    # this method look after the next vertex with the lowest estimation and not locked yet
+    # return None in case there is not
     def next_search(self):
         first_map = None
         for vertex_map in self.vertex_maps:
@@ -49,6 +55,7 @@ class Diijkstra(SearchMethod):
                 first_map = vertex_map
         return first_map
 
+    # this method start to track the path starting from the target to the entrace if a path exists
     def select_path_to_target(self):
         map_of_target = self.map_of_vertex(self.target)
         if not isinstance(map_of_target.prescient, DiijkstraVertexMap):
@@ -56,7 +63,9 @@ class Diijkstra(SearchMethod):
         else:
             self.select_prescient_of(map_of_target)
 
-
+    # this is a recursive method, it marks a vertex as part of the path and try to find the prescient of it
+    # in order to repeat the process all over again until the prescient of any vertex is himself
+    # usually this happens with the entrace, then it stops the recursion
     def select_prescient_of(self, vertex_map):
         vertex_map.vertex.mark_as_part_of_path()
         if vertex_map.prescient is not vertex_map:
