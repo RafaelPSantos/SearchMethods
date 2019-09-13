@@ -7,4 +7,11 @@ class Color():
     ENTRACE_COLOR = (0, 255, 0)
     PATH_COLOR = (255, 0, 255)
     NAME_COLOR = (255, 0, 0)
-    
+    BLACK = (0, 0, 0)
+    GREY = (100, 100, 100)
+    WHITE = (255, 255, 255)
+    YELLOW = (255, 255, 0)
+    ORANGE = (255, 100, 0)
+    RED = (255, 0, 0)
+    GREEN = (0, 255, 0)
+    BLUE = (0, 0, 255)
