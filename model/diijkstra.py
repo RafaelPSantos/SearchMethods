@@ -85,7 +85,9 @@ class Diijkstra(SearchMethod):
             if vertex_map.prescient is not vertex_map:
                 add_vertex_to_path(vertex_map.prescient)
             path_to_target.append(vertex_map.vertex)
-        add_vertex_to_path(self.map_of_vertex(self.target))
+        target_map = self.map_of_vertex(self.target)
+        if target_map.prescient is not None:
+            add_vertex_to_path(target_map)
         return path_to_target
 
 

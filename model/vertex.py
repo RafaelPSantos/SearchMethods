@@ -35,6 +35,9 @@ class Vertex:
     def mark_as_part_of_path(self):
         self.path = True
 
+    def unmark_as_part_of_path(self):
+        self.path = False
+
     def is_part_of_path(self):
         return self.path
 

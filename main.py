@@ -1,18 +1,12 @@
 # coding: utf-8
 
 import pygame
-import string
-import math
 
-from model.diijkstra import Diijkstra
-from model.manhattan_distance import ManhattanDistance
 from model.instructions_screen import InstructionsScreen
 from model.edit_matrix_screen import EditMatrixScreen
 from model.define_edges_screen import DefineEdgesScreen
 from model.matrix import Matrix
 from model.tower_defense import TowerDefense
-from model.gui import Gui
-from model.color import Color
 
 CAPTION = "Search Methods"
 
@@ -115,70 +109,9 @@ def handle_keys(pressed):
     elif settings["current_screen"] == RESIZE_SCREEN:
         pass
     elif settings["current_screen"] == SEARCH_SCREEN:
-        if pressed[pygame.K_RETURN]:
-            start_search()
-        elif pressed[pygame.K_BACKSPACE]:
-            matrix.reset()
-            settings["current_screen"] = RESIZE_SCREEN
+        pass
     elif settings["current_screen"] == GAME_SCREEN:
         pass
-
-
-def start_search(method = 0):
-    search = Diijkstra(matrix.find_entrace_vertice(), matrix.find_target_vertice(), matrix.flat_vertices())
-    search.search_path()
-    search.select_path_to_target()
-    manhattan = ManhattanDistance(matrix.find_entrace_vertice(), matrix.find_target_vertice(), matrix.flat_vertices())
-    print_adjacent_matrix(search.vertices)
-    print(" ")
-    print_manhatthan_distance(manhattan.calculate())
-    print(" ")
-    print("DISTÂNCIA TOTAL PERCORRIDA: " + str(search.distante_to_target()))
-    print(" ")
-    print_path(search.path_to_target())
-
-def print_adjacent_matrix(vertices):
-    print("MATRIZ DE ADJACENTES:")
-    header = "  "
-    max_space = 3
-    for vertex in vertices:
-        blank_space = max_space - len(vertex.name)
-        header += "|" + vertex.name + " " * blank_space
-    header += "|"
-    print(header)
-    for vertex_index, vertex in enumerate(vertices):
-        print("-" * len(header))
-        line = ""
-        blank_space = max_space - len(vertex.name) - 1
-        line += vertex.name + " " * blank_space
-        for other_vertex_index, other_vertex in enumerate(vertices):
-            line += "|"
-            if vertex_index <= other_vertex_index:
-                if other_vertex is vertex:
-                    line += " 0 "
-                else:
-                    if vertex.is_conected_to(other_vertex):
-                        cost = vertex.comon_edge_with(other_vertex).cost
-                        if isinstance(cost, int):
-                            line += " " + str(cost) + " "
-                        else:
-                            line += "%.1f" % cost
-                    else:
-                        line += " 0 "
-            else:
-                line += "   "
-        line += "|"
-        print(line)
-
-def print_manhatthan_distance(distance):
-    print("DISTÂNCIA MANHATTHAN: " + str(distance))
-
-def print_path(vertices):
-    print("CAMINHO DO COMEÇO AO FIM:")
-    line = ""
-    for vertex in vertices:
-        line += " -> " + vertex.name
-    print(line)
 
 def start_game():
     game = TowerDefense()

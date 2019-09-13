@@ -40,14 +40,16 @@ class EditMatrixScreen(Screen):
         margin = self.screen_size[0] - self.table_size[0]
         square_size = self.table_size[0] / 6
         for vertex in self.matrix.flat_vertices():
-            pos_x = vertex.line * square_size + margin / 2
-            pos_y = vertex.column * square_size + margin / 2
+            line = vertex.line
+            column = vertex.column
+            pos_x = line * square_size + margin / 2
+            pos_y = column * square_size + margin / 2
             rec_border = (pos_x, pos_y, square_size, square_size)
-            rec_inside = (pos_x + 1, pos_y + 1, square_size - 2, square_size - 2)
             self.drawable.rect(screen, Color.NORMAL_COLOR, rec_border, 1)
             mouse_pos_x, mouse_pos_y = self.mouse.get_pos()
             min_pos = min(mouse_pos_x, mouse_pos_y)
-            if pos_x < min_pos and pos_y < min_pos:
+            if pos_x < min_pos and pos_y < min_pos or line < 2 and column < 2:
+                rec_inside = (pos_x + 1, pos_y + 1, square_size - 2, square_size - 2)
                 self.drawable.rect(screen, Color.SELECTED_COLOR, rec_inside)
                 self.current_matrix_size = vertex.line + 1
 

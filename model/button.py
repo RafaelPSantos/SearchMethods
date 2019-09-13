@@ -1,5 +1,5 @@
 class Button():
-    def __init__(self, text, pos, size, action, drawable, font):
+    def __init__(self, text, pos, size, action, drawable, font, active_clause):
         self.drawable = drawable
         self.text = text
         self.pos_x = pos[0]
@@ -9,10 +9,12 @@ class Button():
         self.action = action
         self.font = font.SysFont("arial", 16)
         self.bellow_mouse = False
+        self.active_clause = active_clause
 
     def click(self):
-        self.bellow_mouse = False
-        self.action()
+        if self.is_active():
+            self.bellow_mouse = False
+            self.action()
 
     def draw(self, screen):
         white = (255, 255, 255)
@@ -20,7 +22,7 @@ class Button():
         rec = (self.left_margin(), self.top_margin(), self.width, self.height)
 
         text_color = None
-        if self.bellow_mouse:
+        if self.bellow_mouse and self.is_active():
             text_color = black
             self.drawable.rect(screen, white, rec)
         else:
@@ -48,3 +50,6 @@ class Button():
         inside_width = pos_x > self.left_margin() and pos_x < self.right_margin()
         inside_height = pos_y < self.bottom_margin() and pos_y > self.top_margin()
         return inside_width and inside_height
+
+    def is_active(self):
+        return self.active_clause is None or self.active_clause()
