@@ -7,13 +7,10 @@ class Edge:
         self.second_vertex = second_vertex
         self.second_vertex.add_edge(self)
 
-        vertices_on_same_line = self.first_vertex.line == self.second_vertex.line
-        vertices_on_same_column = self.first_vertex.column == self.second_vertex.column
-
-        if vertices_on_same_line or vertices_on_same_column:
-            self.cost = 1
-        else:
+        if self.first_vertex.diagonal_neighbors(self.second_vertex):
             self.cost = math.sqrt(2)
+        else:
+            self.cost = 1
 
     def start(self):
         return (self.first_vertex.pos_x, self.first_vertex.pos_y)

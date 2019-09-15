@@ -90,5 +90,8 @@ class Diijkstra(SearchMethod):
             add_vertex_to_path(target_map)
         return path_to_target
 
+    def path_to_target_exist(self):
+        return len(self.path_to_target()) > 0
+
 
 

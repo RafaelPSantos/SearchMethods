@@ -91,3 +91,8 @@ class Vertex:
                 ordened_connected_vertices.append(vertex)
 
         return ordened_connected_vertices
+
+    def diagonal_neighbors(self, other_vertex):
+        vertices_on_same_line = self.line == other_vertex.line
+        vertices_on_same_column = self.column == other_vertex.column
+        return not (vertices_on_same_line or vertices_on_same_column)

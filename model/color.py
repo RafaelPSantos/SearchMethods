@@ -15,3 +15,6 @@ class Color():
     RED = (255, 0, 0)
     GREEN = (0, 255, 0)
     BLUE = (0, 0, 255)
+    LIGHT_BLUE = (160, 255, 255)
+    ROAD = (140, 70, 0)
+    GREEN = (0, 255, 0)

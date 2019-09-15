@@ -47,8 +47,7 @@ class DefineEdgesScreen(Screen):
             settings["current_screen"] += 1
 
         def can_play():
-            return self.search is not None and len(self.search.path_to_target()) > 0
-
+            return True
 
         bottom = screen_size[1] - 50
         self.add_button("Voltar", back_to_edit_size, [70, bottom])

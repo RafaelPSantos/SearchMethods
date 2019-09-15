@@ -61,9 +61,9 @@ class Matrix():
 
     def flat_vertices(self, with_removed = False):
         flatted_list = []
-        for column in range(len(self.vertices)):
-            for line in range(len(self.vertices[column])):
-                flatted_list.append(self.vertices[line][column])
+        for line in self.vertices:
+            for vertex in line:
+                flatted_list.append(vertex)
         return flatted_list
 
     def create_edge(self, vertices):
@@ -101,3 +101,22 @@ class Matrix():
         horizontal_neighbor = horizontal_diff < 2
         vertical_neighbor = vertical_diff < 2
         return horizontal_neighbor and vertical_neighbor
+
+    def connect_all_vertices(self, only_manhattan = False):
+        for vertex in self.flat_vertices():
+            self.connect_vertex_to_all_neighbors(vertex)
+
+    def connect_vertex_to_all_neighbors(self, vertex):
+        for other_vertex in self.flat_vertices():
+            are_not_same = vertex is not other_vertex
+            are_neighbors = self.are_neighbors(vertex, other_vertex)
+            not_connected = not vertex.is_conected_to(other_vertex)
+            if are_not_same and are_neighbors and not_connected:
+                self.create_edge([vertex, other_vertex])
+
+    def desconnect_vertex_from_everyone(self, vertex):
+        for vertex_connected in vertex.all_ordened_vertex_connected():
+            edge = vertex_connected.comon_edge_with(vertex)
+            vertex_connected.remove_edge(edge)
+            vertex.remove_edge(edge)
+            self.edges.remove(edge)

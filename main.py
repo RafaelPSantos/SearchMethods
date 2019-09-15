@@ -7,7 +7,6 @@ from model.edit_matrix_screen import EditMatrixScreen
 from model.define_edges_screen import DefineEdgesScreen
 from model.game_screen import GameScreen
 from model.matrix import Matrix
-from model.tower_defense import TowerDefense
 from model.color import Color
 
 CAPTION = "Search Methods"
@@ -35,7 +34,7 @@ def main():
     global game_Screen
     global settings
     settings["running"] = True
-    settings["current_screen"] = INSTRUCTIONS_SCREEN
+    settings["current_screen"] = GAME_SCREEN
 
     pygame.init()
     pygame.font.init()
@@ -50,11 +49,14 @@ def main():
     instructions_screen = InstructionsScreen(pygame, SCREEN_SIZE, settings)
     edit_matrix_screen = EditMatrixScreen(matrix, pygame, SCREEN_SIZE, settings)
     define_edges_screen = DefineEdgesScreen(pygame, SCREEN_SIZE, matrix, settings)
-    game_Screen = GameScreen(pygame, SCREEN_SIZE, matrix, settings)
+    game_Screen = GameScreen(pygame, SCREEN_SIZE, settings)
+
+    clock = pygame.time.Clock()
 
     while settings["running"]:
         handle_events(pygame)
         redirect_screen(screen, display)
+        update(clock.tick(60))
 
 def redirect_screen(screen, display):
     screen.fill(Color.BLACK)
@@ -82,8 +84,18 @@ def redirect_event(event):
     elif settings["current_screen"] == SEARCH_SCREEN:
         define_edges_screen.update(event)
     elif settings["current_screen"] == GAME_SCREEN:
-        game_Screen.update(event)
+        game_Screen.update_events(event)
         pass
+
+def update(dt):
+    if settings["current_screen"] == INSTRUCTIONS_SCREEN:
+        pass
+    elif settings["current_screen"] == RESIZE_SCREEN:
+        pass
+    elif settings["current_screen"] == SEARCH_SCREEN:
+        pass
+    elif settings["current_screen"] == GAME_SCREEN:
+        game_Screen.update(dt)
 
 if __name__=="__main__":
     main()
