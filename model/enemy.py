@@ -3,17 +3,16 @@ import math
 from .character import Character
 
 class Enemy(Character):
-    def __init__(self, sprite, position, side_size, path_to_target):
+    def __init__(self, sprite, position, side_size, path_to_target, hp = 5, value = 10, speed = 0.5):
         super().__init__(sprite, position, side_size)
         self.path = path_to_target
         self.path
         self.current_target = self.path[0]
         self.min_distance = 5
-        self.max_hp = 5
-        self.current_hp = self.max_hp
+        self.current_hp = hp
         self.arrived = False
-        self.value = 20
-        self.speed = 0.05
+        self.value = value
+        self.speed = speed
 
     def update(self, dt):
         self.arrived = self.current_target is None

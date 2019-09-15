@@ -9,7 +9,7 @@ class Tower(Character):
         super().__init__(sprite, position, side_size)
         self.range = range
         self.target = None
-        self.fire_time = 1000
+        self.fire_time = 850
         self.current_time = 0
         self.damage = 1
         self.cost = 100

@@ -18,20 +18,9 @@ class GameScreen(Screen):
         self.towers = []
         self.search = None
         self.map_position = (0, self.vertex_distance)
+        self.settings = settings
 
-        self.matrix = Matrix(12, 10, pygame)
-        self.matrix.connect_all_vertices()
-        vertices = self.matrix.flat_vertices()
-        self.matrix.select_targets(vertices[0])
-        self.matrix.select_targets(vertices[len(vertices)-1])
-
-        self.define_road()
-        self.selected_floor = None
-        for vertex in self.matrix.flat_vertices():
-            self.floors.append(Floor(14, vertex, self.sheet.cellWidth, self.vertex_pos(vertex)))
-
-        self.player_money = 200
-        self.player_lifes = 10
+        self.reset_game()
 
         def score():
             return "moedas: " + str(self.player_money)
@@ -39,16 +28,56 @@ class GameScreen(Screen):
         def lifes():
             return "vidas: " + str(self.player_lifes)
 
+        def timer():
+            timer = ("% 0.1f" % float(self.current_time / 1000))
+            if self.attack:
+                return "Duração do ataque: " + timer + "s"
+            else:
+                return "Proxima invasão em: " + timer + "s"
+
+        def can_jump_pause():
+            return not self.attack
+
+        def jump_pause():
+            self.current_time = 0
+
         bottom = screen_size[1] - 50
-        self.add_button("Começar", self.spawn_enemy, [70, bottom])
-        self.add_button("CANNON!", self.add_cannon_to_selected_floor, [screen_size[0] - 70, bottom], self.can_add_anything)
-        self.add_label(score, 12, [0, 0], False, Color.YELLOW)
-        self.add_label(lifes, 12, [100, 0], False, Color.RED)
+        self.add_button("Começar ataque!", jump_pause, [70, bottom], can_jump_pause)
+        self.add_button("Torre 100$!", self.add_cannon_to_selected_floor, [screen_size[0] - 70, bottom], self.can_add_anything)
+        self.add_label(score, 18, [0, 20], False, Color.YELLOW)
+        self.add_label(lifes, 18, [520, 20], False, Color.RED)
+        self.add_label(timer, 20, [300, 20], True, Color.WHITE)
+
+    def reset_game(self):
+        self.enemies = []
+        self.floors = []
+        self.towers = []
+        self.search = None
+        self.matrix = Matrix(12, 10)
+        self.matrix.connect_all_vertices()
+        vertices = self.matrix.flat_vertices()
+        self.matrix.select_targets(vertices[0])
+        self.matrix.select_targets(vertices[len(vertices)-1])
+        for vertex in self.matrix.flat_vertices():
+            self.floors.append(Floor(14, vertex, self.sheet.cellWidth, self.vertex_pos(vertex)))
+        self.define_road()
+        self.selected_floor = None
+        self.player_money = 200
+        self.player_lifes = 10
+        self.attack_time = 10000
+        self.attack_strength = 0
+        self.current_attack_strength = self.attack_strength
+        self.spawn_time = 2000
+        self.current_spawn_time = 0
+        self.min_spawn_time = 100
+        self.pause_time = 10000
+        self.current_time = 0
+        self.attack = True
+
 
     def update_events(self, event):
         left_mouse_clicked = event.type == self.mouse_button_up and event.button == Screen.MOUSE_LEFT_BUTTON
         if left_mouse_clicked:
-            print(event.pos)
             for floor in self.floors:
                 if self.inside_floor_area(floor.area(True), event.pos):
                     if self.selected_floor == floor:
@@ -59,6 +88,34 @@ class GameScreen(Screen):
         self.gui.update(left_mouse_clicked)
 
     def update(self, dt):
+        if self.defeated():
+            self.settings["current_screen"] = 0
+            self.reset_game()
+        if self.current_time > 0:
+            self.current_time -= dt
+            if self.current_time < 0:
+                self.current_time = 0
+
+        if self.attack:
+            if self.current_time <= 0 and not self.enemy_on_screen():
+                self.attack = False
+                self.current_time = self.pause_time
+                self.current_spawn_time = 0
+                self.spawn_time -= 200
+                if self.spawn_time < self.min_spawn_time:
+                    self.spawn_time = self.min_spawn_time
+            elif self.current_time > 0:
+                if self.current_spawn_time <= 0:
+                    self.spawn_enemy()
+                    self.current_spawn_time = self.spawn_time
+                else:
+                    self.current_spawn_time -= dt
+        else:
+            if self.current_time <= 0:
+                self.attack_strength += 0.5
+                self.current_attack_strength = self.attack_strength
+                self.attack = True
+                self.current_time = self.pause_time
         for tower in self.towers:
             tower.update(dt)
             if not tower.has_target():
@@ -95,7 +152,7 @@ class GameScreen(Screen):
         for floor in self.floors:
             pos_x, pos_y = floor.sprite_position()
             self.sheet.draw(screen, 14, pos_x, pos_y)
-            screen.set_at((floor.pos_x, floor.pos_y), (255, 0, 0))
+            # screen.set_at((floor.pos_x, floor.pos_y), (255, 0, 0)) #draw a dot
         for floor in self.floors:
             vertex = floor.vertex
             position = self.vertex_pos(vertex)
@@ -146,7 +203,10 @@ class GameScreen(Screen):
         self.search.select_path_to_target()
 
     def can_add_anything(self):
-        return self.selected_floor is not None
+        no_enemies = not self.enemy_on_screen()
+        pause = not self.attack
+        has_money = self.player_money - 100 >= 0
+        return no_enemies and pause and self.selected_floor is not None and has_money
 
     def add_cannon_to_selected_floor(self):
         vertex = self.selected_floor.vertex
@@ -180,7 +240,15 @@ class GameScreen(Screen):
             floor = self.floor_of_vertex(vertex)
             if floor is not None:
                 floors_to_target.append(floor)
-        new_enemy = Enemy(1, start_position, self.sheet.cellWidth, floors_to_target)
+        new_enemy = None
+        if self.current_attack_strength - 2  > 0:
+            self.current_attack_strength -= 1
+            new_enemy = Enemy(5, start_position, self.sheet.cellWidth, floors_to_target, 8, 100, 0.15)
+        elif self.current_attack_strength - 1  > 0:
+            self.current_attack_strength -= 0.5
+            new_enemy = Enemy(3, start_position, self.sheet.cellWidth, floors_to_target, 4, 50, 0.2)
+        else:
+            new_enemy = Enemy(1, start_position, self.sheet.cellWidth, floors_to_target, 3, 15, 0.1)
         self.enemies.append(new_enemy)
 
     def floor_of_vertex(self, vertex):
@@ -191,3 +259,6 @@ class GameScreen(Screen):
 
     def defeated(self):
         return self.player_lifes <= 0
+
+    def enemy_on_screen(self):
+        return len(self.enemies) > 0

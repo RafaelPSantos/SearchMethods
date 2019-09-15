@@ -11,8 +11,7 @@ class Matrix():
     VERTEX_NAME_SIZE = 20
     VERTEX_RADIO = 18
 
-    def __init__(self, line_count, column_count, pygame):
-        self.pygame = pygame
+    def __init__(self, line_count, column_count):
         self.vertices = []
         self.edges = []
         self.line_count = line_count

@@ -7,7 +7,7 @@ class Label():
         self.text_color = text_color
         self.label = self.font.render("", 1, text_color)
         self.centralized = centralized
-        self.last_text = ""
+        self.last_text = "a"
 
     def draw(self, screen):
         text = ""
@@ -15,8 +15,8 @@ class Label():
             text = self.text
         else:
             text = self.text()
-            if text != self.last_text:
-                self.label = self.font.render(text, 1, self.text_color)
+        if text != self.last_text:
+            self.label = self.font.render(text, 1, self.text_color)
         position = [self.pos_x , self.pos_y]
         if self.centralized:
             position[0] -= (self.size().width / 2)
