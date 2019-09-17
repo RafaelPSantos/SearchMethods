@@ -19,6 +19,7 @@ class GameScreen(Screen):
         self.search = None
         self.map_position = (0, self.vertex_distance)
         self.settings = settings
+        self.current_level = 1
 
         self.reset_game()
 
@@ -35,6 +36,9 @@ class GameScreen(Screen):
             else:
                 return "Proxima invasão em: " + timer + "s"
 
+        def level():
+            return "Invasão nº" + str(self.current_level)
+
         def can_jump_pause():
             return not self.attack
 
@@ -47,6 +51,7 @@ class GameScreen(Screen):
         self.add_label(score, 18, [0, 20], False, Color.YELLOW)
         self.add_label(lifes, 18, [520, 20], False, Color.RED)
         self.add_label(timer, 20, [300, 20], True, Color.WHITE)
+        self.add_label(level, 20, [300, 560], True, Color.WHITE)
 
     def reset_game(self):
         self.enemies = []
@@ -113,9 +118,10 @@ class GameScreen(Screen):
         else:
             if self.current_time <= 0:
                 self.attack_strength += 0.5
-                self.current_attack_strength = self.attack_strength
+                self.current_attack_strength = self.attack_strength + len(self.towers) / 5
                 self.attack = True
                 self.current_time = self.pause_time
+                self.current_level += 1
         for tower in self.towers:
             tower.update(dt)
             if not tower.has_target():
@@ -240,15 +246,16 @@ class GameScreen(Screen):
             floor = self.floor_of_vertex(vertex)
             if floor is not None:
                 floors_to_target.append(floor)
-        new_enemy = None
+        extra_speed = self.current_level / 200
+        extra_hp = int(self.current_level / 10)
         if self.current_attack_strength - 2  > 0:
             self.current_attack_strength -= 1
-            new_enemy = Enemy(5, start_position, self.sheet.cellWidth, floors_to_target, 8, 100, 0.15)
+            new_enemy = Enemy(5, start_position, self.sheet.cellWidth, floors_to_target, 10 + extra_hp, 150, 0.05 + extra_speed)
         elif self.current_attack_strength - 1  > 0:
             self.current_attack_strength -= 0.5
-            new_enemy = Enemy(3, start_position, self.sheet.cellWidth, floors_to_target, 4, 50, 0.2)
+            new_enemy = Enemy(3, start_position, self.sheet.cellWidth, floors_to_target, 5 + extra_hp, 50, 0.15 + extra_speed)
         else:
-            new_enemy = Enemy(1, start_position, self.sheet.cellWidth, floors_to_target, 3, 15, 0.1)
+            new_enemy = Enemy(1, start_position, self.sheet.cellWidth, floors_to_target, 3 + extra_hp, 15, 0.1 + extra_speed)
         self.enemies.append(new_enemy)
 
     def floor_of_vertex(self, vertex):
