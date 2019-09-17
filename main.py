@@ -56,7 +56,7 @@ def main():
     game_history.append("      Um poderoso exército inimigo esta se aproximando pelo norte.")
     game_history.append("      Seu rei, ordenou que nossa cidade fosse invadida imediatamente")
     game_history.append("ele disse a suas tropas para seguirem sem parar custe o que custar.")
-    game_history.append("para isso, ele juntou todos os matemátas do reino")
+    game_history.append("para isso, ele juntou todos os matemáticos do reino")
     game_history.append("e ordenou que calculassem a menor rota até nós,")
     game_history.append("e que seu exército, marche sem parar até a cidade por essa rota")
     game_history.append("sem parar significa que ele deu ordens apenas correrem")

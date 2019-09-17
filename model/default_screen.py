@@ -14,9 +14,9 @@ class Screen():
         label = self.gui.add_label(text, (pos[0], pos[1]), font_size, centralized, text_color)
         pos[1] += label.size().height
 
-    def add_button(self, text, action, pos, active_clause = None):
+    def add_button(self, text, action, pos, active_clause = None, font_size = 16):
         button_width = 120
         button_height = 40
         pos[1] += button_height / 2
-        button =  self.gui.add_button(text, (pos[0], pos[1]), (button_width, button_height), action, active_clause)
+        button =  self.gui.add_button(text, (pos[0], pos[1]), (button_width, button_height), action, active_clause, font_size)
         pos[1] += button.height

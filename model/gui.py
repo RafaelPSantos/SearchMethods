@@ -10,8 +10,8 @@ class Gui():
         self.labels = []
         self.screen_bounds = screen_bounds
 
-    def add_button(self, text, position, size, on_click, active_clause):
-        new_button = Button(text, position, size, on_click, self.drawable, self.font, active_clause)
+    def add_button(self, text, position, size, on_click, active_clause, font_size):
+        new_button = Button(text, position, size, on_click, self.drawable, self.font, active_clause, font_size)
         self.buttons.append(new_button)
         return(new_button)
 

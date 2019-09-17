@@ -1,13 +1,13 @@
 class Button():
-    def __init__(self, text, pos, size, action, drawable, font, active_clause):
+    def __init__(self, text, pos, size, action, drawable, font, active_clause, font_size):
         self.drawable = drawable
         self.text = text
         self.pos_x = pos[0]
         self.pos_y = pos[1]
         self.width = size[0]
         self.height = size[1]
-        self.action = action
-        self.font = font.SysFont("arial", 16)
+        self.action = action 
+        self.font = font.SysFont("arial", font_size)
         self.bellow_mouse = False
         self.active_clause = active_clause
 
@@ -29,7 +29,12 @@ class Button():
             text_color = white
             self.drawable.rect(screen, white, rec, 1)
 
-        label = self.font.render(self.text, 1, text_color)
+        label = None
+        if isinstance(self.text, str):
+            label = self.font.render(self.text, 1, text_color)
+        else:
+            label = self.font.render(self.text(), 1, text_color)
+        
         text_size = label.get_rect()
         text_pos = (self.pos_x - text_size.width / 2, self.pos_y - text_size.height / 2)
         screen.blit(label, text_pos)

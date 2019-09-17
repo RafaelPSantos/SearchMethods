@@ -45,9 +45,18 @@ class GameScreen(Screen):
         def jump_pause():
             self.current_time = 0
 
+        def add_or_upgrade():
+            if self.selected_floor is None :
+                return "Selecione um Terreno"
+            else:
+                if self.selected_floor.tower is None:
+                    return "Torre 100$!"
+                else:
+                    return "Atualizar 100$!"
         bottom = screen_size[1] - 50
         self.add_button("Começar ataque!", jump_pause, [70, bottom], can_jump_pause)
-        self.add_button("Torre 100$!", self.add_cannon_to_selected_floor, [screen_size[0] - 70, bottom], self.can_add_anything)
+        self.add_button("Vender", self.sell_tower, [screen_size[0] - 190, bottom], self.can_sell_tower, 12)
+        self.add_button(add_or_upgrade, self.add_or_upgrade_cannon_to_selected_floor, [screen_size[0] - 70, bottom], self.can_add_anything, 12)
         self.add_label(score, 18, [0, 20], False, Color.YELLOW)
         self.add_label(lifes, 18, [520, 20], False, Color.RED)
         self.add_label(timer, 20, [300, 20], True, Color.WHITE)
@@ -75,7 +84,7 @@ class GameScreen(Screen):
         self.spawn_time = 2000
         self.current_spawn_time = 0
         self.min_spawn_time = 100
-        self.pause_time = 10000
+        self.pause_time = 30000
         self.current_time = 0
         self.attack = True
 
@@ -120,7 +129,7 @@ class GameScreen(Screen):
                 self.attack_strength += 0.5
                 self.current_attack_strength = self.attack_strength + len(self.towers) / 5
                 self.attack = True
-                self.current_time = self.pause_time
+                self.current_time = self.attack_time
                 self.current_level += 1
         for tower in self.towers:
             tower.update(dt)
@@ -188,7 +197,7 @@ class GameScreen(Screen):
                 color = Color.ROAD
                 start = self.vertex_pos(edge.first_vertex)
                 end = self.vertex_pos(edge.second_vertex)
-                self.gui.drawable.line(screen, color, start, end, 10)
+                self.gui.drawable.line(screen, color, start, end, 14)
 
     def draw_enemies(self, screen):
         for enemy in self.enemies:
@@ -212,24 +221,42 @@ class GameScreen(Screen):
         no_enemies = not self.enemy_on_screen()
         pause = not self.attack
         has_money = self.player_money - 100 >= 0
-        return no_enemies and pause and self.selected_floor is not None and has_money
+        selected_floor = self.selected_floor is not None
+        return no_enemies and pause and selected_floor and has_money
 
-    def add_cannon_to_selected_floor(self):
-        vertex = self.selected_floor.vertex
-        self.matrix.desconnect_vertex_from_everyone(vertex)
-        self.define_road()
-        if self.search.path_to_target_exist():
-            floor = self.selected_floor
-            position = (floor.pos_x, floor.pos_y)
-            new_cannon = Tower(12, position, self.sheet.cellWidth)
-            if self.player_money - new_cannon.cost >= 0:
-                self.player_money -= new_cannon.cost
-                floor.tower = new_cannon
-                self.towers.append(new_cannon)
-        else:
-            self.matrix.connect_vertex_to_all_neighbors(vertex)
+    def add_or_upgrade_cannon_to_selected_floor(self):
+        if self.selected_floor.tower is None:
+            vertex = self.selected_floor.vertex
+            self.matrix.desconnect_vertex_from_everyone(vertex)
             self.define_road()
+            if self.search.path_to_target_exist():
+                floor = self.selected_floor
+                position = (floor.pos_x, floor.pos_y)
+                new_cannon = Tower(12, position, self.sheet.cellWidth)
+                if self.player_money - new_cannon.cost >= 0:
+                    self.player_money -= new_cannon.cost
+                    floor.tower = new_cannon
+                    self.towers.append(new_cannon)
+            else:
+                self.matrix.connect_vertex_to_all_neighbors(vertex)
+                self.define_road()
+        else:
+            if self.player_money - 100 >= 0:
+                tower = self.selected_floor.tower
+                tower.range += 10
+                tower.fire_time -= 25
+                tower.damage += 0.5
+                self.player_money -= 100
         self.selected_floor = None
+
+    def can_sell_tower(self):
+        return self.selected_floor is not None and self.selected_floor.tower is not None
+
+    def sell_tower(self):
+        tower = self.selected_floor.tower
+        self.towers.remove(tower)
+        self.selected_floor.tower = None
+        self.player_money += 50
 
     def inside_floor_area(self, area, position):
         pos_x, pos_y = position
