@@ -7,3 +7,6 @@ class Character:
 
     def sprite_position(self):
         return (self.pos_x - self.side_size / 2, self.pos_y - self.side_size / 2)
+
+    def position(self):
+        return (self.pos_x, self.pos_y)

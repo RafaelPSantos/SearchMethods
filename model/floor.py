@@ -6,10 +6,10 @@ class Floor(Character):
         self.vertex = vertex
         self.tower = None
 
-    def area(self, centralied = False):
+    def area(self):
         pos_x, pos_y = self.sprite_position()
         return (pos_x, pos_y, pos_x + self.side_size, pos_y + self.side_size)
 
-    def rec(self, centralied = False):
+    def rec(self):
         pos_x, pos_y = self.sprite_position()
         return (pos_x, pos_y, self.side_size, self.side_size)

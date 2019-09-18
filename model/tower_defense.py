@@ -1,31 +1,65 @@
 from .color import Color
 from .matrix import Matrix
 from .diijkstra import Diijkstra
+from .vertex import Vertex
 from .floor import Floor
 from .tower import Tower
 from .enemy import Enemy
 
 class TowerDefense():
-    def __init__(self, square_size):
-        self.enemies = []
+    def __init__(self, enemy_spawn_vertex, matrix, side_size, map_position):
+        self.map_position = map_position
+        self.side_size = side_size
+        self.enemy_spawn_position = self.vertex_position_according_map(enemy_spawn_vertex)
+        self.matrix = matrix
         self.floors = []
+        for vertex in self.matrix.flat_vertices():
+            self.floors.append(Floor(14, vertex, self.side_size, self.vertex_position_according_map(vertex)))
+        self.enemies = []
+        self.selected_floor = None
         self.towers = []
+        self.current_level = 1
         self.player_money = 200
         self.player_lifes = 10
-        self.square_size = square_size
-
-        self.matrix = Matrix(12, 10)
-        self.matrix.connect_all_vertices()
-        vertices = self.matrix.flat_vertices()
-        self.matrix.select_targets(vertices[0])
-        self.matrix.select_targets(vertices[len(vertices)-1])
-
+        self.attack_time = 10000
+        self.attack_strength = 0
+        self.current_attack_strength = self.attack_strength
+        self.spawn_time = 2000
+        self.current_spawn_time = 0
+        self.min_spawn_time = 100
+        self.pause_time = 30000
+        self.current_time = 0
+        self.attack = True
+        self.search = None
         self.define_road()
 
-        for vertex in self.matrix.flat_vertices():
-            self.floors.append(Floor(14, vertex, self.square_size, self.vertex_pos(vertex)))
-
     def update(self, dt):
+        if self.current_time > 0:
+            self.current_time -= dt
+            if self.current_time < 0:
+                self.current_time = 0
+
+        if self.attack:
+            if self.current_time <= 0 and not self.any_enemy_alive():
+                self.attack = False
+                self.current_time = self.pause_time
+                self.current_spawn_time = 0
+                self.spawn_time -= 200
+                if self.spawn_time < self.min_spawn_time:
+                    self.spawn_time = self.min_spawn_time
+            elif self.current_time > 0:
+                if self.current_spawn_time <= 0:
+                    self.spawn_enemy()
+                    self.current_spawn_time = self.spawn_time
+                else:
+                    self.current_spawn_time -= dt
+        else:
+            if self.current_time <= 0:
+                self.attack_strength += 0.5
+                self.current_attack_strength = self.attack_strength + len(self.towers) / 5
+                self.attack = True
+                self.current_time = self.attack_time
+                self.current_level += 1
         for tower in self.towers:
             tower.update(dt)
             if not tower.has_target():
@@ -46,37 +80,66 @@ class TowerDefense():
 
     def spawn_enemy(self):
         path_to_target = self.search.path_to_target()
-        start_position = self.vertex_pos(self.matrix.find_entrace_vertice())
         floors_to_target = []
         for vertex in path_to_target:
             floor = self.floor_of_vertex(vertex)
             if floor is not None:
                 floors_to_target.append(floor)
-        new_enemy = Enemy(1, start_position, self.sheet.cellWidth, floors_to_target)
+        extra_speed = self.current_level / 200
+        extra_hp = int(self.current_level / 10)
+        sheet_size = 50
+        if self.current_attack_strength - 2  > 0:
+            self.current_attack_strength -= 1
+            new_enemy = Enemy(5, self.enemy_spawn_position, self.side_size, floors_to_target, 10 + extra_hp, 150, 0.05 + extra_speed)
+        elif self.current_attack_strength - 1  > 0:
+            self.current_attack_strength -= 0.5
+            new_enemy = Enemy(3, self.enemy_spawn_position, self.side_size, floors_to_target, 5 + extra_hp, 50, 0.15 + extra_speed)
+        else:
+            new_enemy = Enemy(1, self.enemy_spawn_position, self.side_size, floors_to_target, 3 + extra_hp, 15, 0.1 + extra_speed)
         self.enemies.append(new_enemy)
 
-    def can_add_anything(self):
-        return self.selected_floor is not None
 
-    def can_add_anything(self):
-        return self.selected_floor is not None
+    def can_sell_tower(self):
+        return self.selected_floor is not None and self.selected_floor.tower is not None
 
-    def add_cannon_to_selected_floor(self):
-        vertex = self.selected_floor.vertex
-        self.matrix.desconnect_vertex_from_everyone(vertex)
+    def sell_tower(self):
+        tower = self.selected_floor.tower
+        self.towers.remove(tower)
+        self.player_money += 50
+        self.matrix.connect_vertex_to_all_neighbors(self.selected_floor.vertex)
         self.define_road()
-        if self.search.path_to_target_exist():
-            floor = self.selected_floor
-            position = (floor.pos_x, floor.pos_y)
-            new_cannon = Tower(12, position, self.sheet.cellWidth)
-            if self.player_money - new_cannon.cost >= 0:
-                self.player_money -= new_cannon.cost
-                floor.tower = new_cannon
-                self.towers.append(new_cannon)
-        else:
-            self.matrix.connect_vertex_to_all_neighbors(vertex)
+        self.selected_floor.tower = None
+
+    def can_add_anything(self):
+        no_enemies = not self.any_enemy_alive()
+        pause = not self.attack
+        has_money = self.player_money - 100 >= 0
+        selected_floor = self.selected_floor is not None
+        return no_enemies and pause and selected_floor and has_money
+
+    def add_or_upgrade_cannon_to_selected_floor(self):
+        if self.selected_floor.tower is None:
+            vertex = self.selected_floor.vertex
+            self.matrix.desconnect_vertex_from_everyone(vertex)
             self.define_road()
-        self.selected_floor = None
+            if self.search.path_to_target_exist():
+                floor = self.selected_floor
+                position = (floor.pos_x, floor.pos_y)
+                new_cannon = Tower(12, position, self.side_size)
+                if self.player_money - new_cannon.cost >= 0:
+                    self.player_money -= new_cannon.cost
+                    floor.tower = new_cannon
+                    self.towers.append(new_cannon)
+            else:
+                self.matrix.connect_vertex_to_all_neighbors(vertex)
+                self.define_road()
+        else:
+            if self.player_money - 100 >= 0:
+                tower = self.selected_floor.tower
+                tower.range += 10
+                tower.fire_time -= 25
+                tower.damage += 0.5
+                self.player_money -= 100
 
     def define_road(self):
         vertices = self.matrix.flat_vertices()
@@ -86,10 +149,20 @@ class TowerDefense():
         self.search.search_path()
         self.search.select_path_to_target()
 
-    def vertex_pos(self, vertex):
-        pos_x = self.map_position[0] + (vertex.line + 1) * self.vertex_distance - self.vertex_distance / 2
-        pos_y = self.map_position[1] + (vertex.column  + 1) * self.vertex_distance - self.vertex_distance / 2
+    def floor_of_vertex(self, vertex):
+        for floor in self.floors:
+            if floor.vertex is vertex:
+                return floor
+        return None
+
+    def vertex_position_according_map(self, vertex):
+        pos_x = self.map_position[0] + (vertex.line + 1) * self.side_size - self.side_size / 2
+        pos_y = self.map_position[1] + (vertex.column  + 1) * self.side_size - self.side_size / 2
+
         return (int(pos_x), int(pos_y))
+
+    def any_enemy_alive(self):
+        return len(self.enemies) > 0
 
     def defeated(self):
         return self.player_lifes <= 0
