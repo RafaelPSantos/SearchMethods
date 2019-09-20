@@ -22,7 +22,7 @@ class DefineEdgesScreen(Screen):
         posisition[0] = 10
         self.add_label("Clique sobre os vertices com o botão esquerdo para definir as arestas:", \
             Screen.BODY_SIZE, posisition, False, Color.NORMAL_COLOR)
-        self.add_label("Clique sobre os vertices com o botão direito para definir a aresta inicial e final:", \
+        self.add_label("Clique sobre os vertices com o botão direito para definir os vertices inicial e final:", \
             Screen.BODY_SIZE, posisition, False, Color.NORMAL_COLOR)
         self.add_label("LEGENDA DE CORES:", 12, posisition, False, Color.NORMAL_COLOR)
         self.add_label("1-Vertice inicial", 12, posisition, False, Color.ENTRACE_COLOR)
