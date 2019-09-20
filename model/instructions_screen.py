@@ -16,7 +16,7 @@ class InstructionsScreen(Screen):
         self.add_button("Começar", start_game, pos)
         self.add_button("Configurações", 1, pos)
         self.add_button("Sair", quit_game, pos)
-        self.add_label("Criado por Caio Santos, Daniel e Rafael Pereira", 12, [0, screen_size[1] - 14], False)
+        self.add_label("Criado por Caio Santos e Rafael Pereira", 12, [0, screen_size[1] - 14], False)
 
 
     def update(self, event):

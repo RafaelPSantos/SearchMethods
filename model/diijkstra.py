@@ -25,6 +25,10 @@ class Diijkstra(SearchMethod):
     # this method search for all other vertex conected to the param vertex_map and estimate their paths
     # if the current path is lower that the new estimation, it will keep the old one,
     # other wise will change for the new current estimation for the new one
+
+    # Esse metodo procura por todos os vertices conectados a dado vertice e estima o seu caminho
+    # se o caminho encotrado para esses vertices for menor que o anterior ele troca pelo novo
+    # caso contrario, mantem o antigo
     def search_paths_of_map(self, vertex_map):
         vertex_map.lock()
         vertex = vertex_map.vertex
@@ -40,6 +44,8 @@ class Diijkstra(SearchMethod):
 
     # this method look after the next vertex with the lowest estimation and not locked yet
     # return None in case there is not
+
+    # Esse metodo procura um novo vertice, com menor caminho para travar e procurar seus filhos
     def next_search(self):
         first_map = None
         for vertex_map in self.vertex_maps:
@@ -66,6 +72,8 @@ class Diijkstra(SearchMethod):
     # this is a recursive method, it marks a vertex as part of the path and try to find the prescient of it
     # in order to repeat the process all over again until the prescient of any vertex is himself
     # usually this happens with the entrace, then it stops the recursion
+
+    # Esse metodo recursivo, marca os vertices que fazem parte do caminho dês do target até a entrace
     def select_prescient_of(self, vertex_map):
         vertex_map.vertex.mark_as_part_of_path()
         if vertex_map.prescient is not vertex_map:
