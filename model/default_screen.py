@@ -11,12 +11,19 @@ class Screen():
         self.mouse_button_up = pygame.MOUSEBUTTONUP
 
     def add_label(self, text, font_size, pos = [0, 0], centralized = True, text_color = Color.NORMAL_COLOR):
-        label = self.gui.add_label(text, (pos[0], pos[1]), font_size, centralized, text_color)
+        label = self.gui.add_label(text, pos, font_size, centralized, text_color)
         pos[1] += label.size().height
+        return label
 
-    def add_button(self, text, action, pos, active_clause = None, font_size = 16):
-        button_width = 120
-        button_height = 40
-        pos[1] += button_height / 2
-        button =  self.gui.add_button(text, (pos[0], pos[1]), (button_width, button_height), action, active_clause, font_size)
-        pos[1] += button.height
+    def add_button(self, text, action, pos, font_size = 16, size = (120, 40)):
+        button =  self.gui.add_button(text, pos, size, action, font_size)
+        return button
+
+    def draw(self, screen):
+        pass
+
+    def update(self, dt):
+        pass
+
+    def event_handler(self, event):
+        pass

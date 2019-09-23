@@ -23,7 +23,7 @@ class EditMatrixScreen(Screen):
         self.add_label("A matrix deve ser no minimo: 2x2 e, no maximo: 6x6.", Screen.BODY_SIZE, posisition, False)
         self.add_button("Voltar", back_to_main_menu, [70, screen_size[1] - 50])
 
-    def update(self, event):
+    def event_handler(self, event):
         left_button_click = False
         if event.type == self.mouse_button_up:
             left_button_click = event.button == Screen.MOUSE_LEFT_BUTTON

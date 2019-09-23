@@ -43,19 +43,14 @@ class DefineEdgesScreen(Screen):
             target_marked = self.matrix.find_target_vertice() is not None
             return entrace_marked and target_marked
 
-        def start_game():
-            settings["current_screen"] += 1
-
         def can_play():
             return True
 
         bottom = screen_size[1] - 50
         self.add_button("Voltar", back_to_edit_size, [70, bottom])
         self.add_button("Usar Diijkstra", self.start_search, [screen_size[0] / 2, bottom], can_search_path)
-        self.add_button("Jogar!", start_game, [screen_size[0] - 70, bottom], can_play)
 
-
-    def update(self, event):
+    def event_handler(self, event):
         left_button_click = False
         if event.type == self.mouse_button_up:
             left_button_click = event.button == Screen.MOUSE_LEFT_BUTTON

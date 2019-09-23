@@ -2,7 +2,7 @@
 
 import pygame
 
-from model.instructions_screen import InstructionsScreen
+from model.main_menu_screen import MainMenuScreen
 from model.info_screen import InfoScreen
 from model.edit_matrix_screen import EditMatrixScreen
 from model.define_edges_screen import DefineEdgesScreen
@@ -13,9 +13,9 @@ from model.color import Color
 CAPTION = "Search Methods"
 
 START_SCREEN = 0
-DESCRIPTION_SCREEN = 1
-RESIZE_SCREEN = 2
-SEARCH_SCREEN = 3
+RESIZE_SCREEN = 1
+SEARCH_SCREEN = 2
+DESCRIPTION_SCREEN = 3
 GAME_SCREEN = 4
 
 MINIMUN_ARRAY_SIZE = 2
@@ -23,22 +23,23 @@ MAX_ARRAY_SIZE = 6
 
 SCREEN_SIZE = (600, 600)
 
-instructions_screen = None
+main_menu_screen = None
 description_screen = None
 edit_matrix_screen = None
 define_edges_screen = None
 game_Screen = None
+
 settings = {}
 
 def main():
-    global instructions_screen
+    global main_menu_screen
     global description_screen
     global edit_matrix_screen
     global define_edges_screen
     global game_Screen
     global settings
     settings["running"] = True
-    settings["current_screen"] = START_SCREEN
+    settings["current_screen"] = GAME_SCREEN
 
     pygame.init()
     pygame.font.init()
@@ -50,7 +51,7 @@ def main():
 
     matrix = Matrix(MAX_ARRAY_SIZE, MAX_ARRAY_SIZE)
 
-    instructions_screen = InstructionsScreen(pygame, SCREEN_SIZE, settings)
+    main_menu_screen = MainMenuScreen(pygame, SCREEN_SIZE, settings)
     game_history = []
     game_history.append("HISTORIA")
     game_history.append("      Um poderoso exército inimigo esta se aproximando pelo norte.")
@@ -69,7 +70,7 @@ def main():
     game_history.append("AVISO: você não poderá construir torres enquanto o inimigo ataca,")
     game_history.append("apenas durante os intervalos entre ataques!")
 
-    description_screen = InfoScreen(pygame, SCREEN_SIZE, settings, game_history, START_SCREEN, RESIZE_SCREEN)
+    description_screen = InfoScreen(pygame, SCREEN_SIZE, settings, game_history)
     edit_matrix_screen = EditMatrixScreen(matrix, pygame, SCREEN_SIZE, settings)
     define_edges_screen = DefineEdgesScreen(pygame, SCREEN_SIZE, matrix, settings)
     game_Screen = GameScreen(pygame, SCREEN_SIZE, settings)
@@ -77,54 +78,32 @@ def main():
     clock = pygame.time.Clock()
 
     while settings["running"]:
-        handle_events(pygame)
-        redirect_screen(screen, display)
-        update(clock.tick(60))
+        current = current_screen()
 
-def redirect_screen(screen, display):
-    screen.fill(Color.BLACK)
+        for event in pygame.event.get():
+            pressed = pygame.key.get_pressed()
+            settings["running"] = not (event.type == pygame.QUIT or pressed[pygame.K_ESCAPE])
+            current.event_handler(event)
+
+        screen.fill(Color.BLACK)
+        current.draw(screen)
+        display.flip()
+
+        current.update(clock.tick(60))
+
+def current_screen():
+    screen = None
     if settings["current_screen"] == START_SCREEN:
-        instructions_screen.draw(screen)
+        screen =  main_menu_screen
     elif settings["current_screen"] == DESCRIPTION_SCREEN:
-        description_screen.draw(screen)
+        screen = description_screen
     elif settings["current_screen"] == RESIZE_SCREEN:
-        edit_matrix_screen.draw(screen)
+        screen = edit_matrix_screen
     elif settings["current_screen"] == SEARCH_SCREEN:
-        define_edges_screen.draw(screen)
+        screen = define_edges_screen
     elif settings["current_screen"] == GAME_SCREEN:
-        game_Screen.draw(screen)
-    display.flip()
-
-def handle_events(pygame):
-    for event in pygame.event.get():
-        pressed = pygame.key.get_pressed()
-        settings["running"] = not (event.type == pygame.QUIT or pressed[pygame.K_ESCAPE])
-        redirect_event(event)
-
-def redirect_event(event):
-    if settings["current_screen"] == START_SCREEN:
-        instructions_screen.update(event)
-    elif settings["current_screen"] == DESCRIPTION_SCREEN:
-        description_screen.update(event)
-    elif settings["current_screen"] == RESIZE_SCREEN:
-        edit_matrix_screen.update(event)
-    elif settings["current_screen"] == SEARCH_SCREEN:
-        define_edges_screen.update(event)
-    elif settings["current_screen"] == GAME_SCREEN:
-        game_Screen.update_events(event)
-        pass
-
-def update(dt):
-    if settings["current_screen"] == START_SCREEN:
-        pass
-    elif settings["current_screen"] == DESCRIPTION_SCREEN:
-        pass
-    elif settings["current_screen"] == RESIZE_SCREEN:
-        pass
-    elif settings["current_screen"] == SEARCH_SCREEN:
-        pass
-    elif settings["current_screen"] == GAME_SCREEN:
-        game_Screen.update(dt)
+        screen = game_Screen
+    return screen
 
 if __name__=="__main__":
     main()

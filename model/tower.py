@@ -5,15 +5,17 @@ from .magic_line import MagicLine
 from .color import Color
 
 class Tower(Character):
-    def __init__(self, sprite, position, side_size, range = 100):
+    def __init__(self, sprite, damage, range, fire_time, effect, position, side_size, cost, attack_color = Color.LIGHT_BLUE):
         super().__init__(sprite, position, side_size)
+        self.damage = damage
         self.range = range
         self.target = None
-        self.fire_time = 850
+        self.fire_time = fire_time
         self.current_time = 0
-        self.damage = 1
-        self.cost = 100
+        self.cost = cost
         self.magic_lines = []
+        self.attack_color = attack_color
+        self.current_level = 1
 
     def update(self, dt):
         new_lines = []
@@ -22,11 +24,10 @@ class Tower(Character):
                 line.update(dt)
                 new_lines.append(line)
         self.magic_lines = new_lines
-        if self.has_target() and (not self.on_range_of(self.target) or not self.target.is_alive()):
+        if self.has_target() and (not self.on_range_of(self.target) or not self.target.is_alive() or self.target.arrived):
             self.target = None
-        if self.can_fire():
-            if self.target is not None:
-                self.fire(self.target)
+        if self.can_fire() and self.has_target():
+            self.fire(self.target)
         else:
             self.colling_down(dt)
 
@@ -42,7 +43,7 @@ class Tower(Character):
     def fire(self, target):
         self.cool_down()
         self.target.damage(self.damage)
-        new_line = MagicLine((self.pos_x, self.pos_y - 15), (self.target.pos_x, self.target.pos_y), Color.LIGHT_BLUE, 5)
+        new_line = MagicLine((self.pos_x, self.pos_y - 15), (self.target.pos_x, self.target.pos_y), self.attack_color, 5)
         self.magic_lines.append(new_line)
 
     def can_fire(self):
@@ -56,4 +57,11 @@ class Tower(Character):
 
     def has_target(self):
         return self.target is not None
+
+    def upgrade(self):
+        self.range += 10
+        self.fire_time -= 25
+        self.damage += 0.5
+        self.current_level += 1
+        
 

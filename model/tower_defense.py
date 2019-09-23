@@ -33,6 +33,12 @@ class TowerDefense():
         self.search = None
         self.define_road()
 
+        self.tower_attributes = {}
+        self.tower_attributes["light_tower"] = [12, 0.1, 150, 80, None, Color.YELLOW, 80]
+        self.tower_attributes["ice_tower"] = [12, 1, 50, 500, None, Color.LIGHT_BLUE, 100]
+        self.tower_attributes["fire_tower"] = [12, 3, 100, 850, None, Color.RED, 150]
+        self.max_level_up = 3
+
     def update(self, dt):
         if self.current_time > 0:
             self.current_time -= dt
@@ -117,7 +123,8 @@ class TowerDefense():
         selected_floor = self.selected_floor is not None
         return no_enemies and pause and selected_floor and has_money
 
-    def add_or_upgrade_cannon_to_selected_floor(self):
+    def add_tower_to_selected_floor(self, tower_name):
+        atr = self.tower_attributes[tower_name]
         if self.selected_floor.tower is None:
             vertex = self.selected_floor.vertex
             self.matrix.desconnect_vertex_from_everyone(vertex)
@@ -125,7 +132,7 @@ class TowerDefense():
             if self.search.path_to_target_exist():
                 floor = self.selected_floor
                 position = (floor.pos_x, floor.pos_y)
-                new_cannon = Tower(12, position, self.side_size)
+                new_cannon = Tower(atr[0], atr[1], atr[2], atr[3], atr[4], position, self.side_size, atr[6], atr[5])
                 if self.player_money - new_cannon.cost >= 0:
                     self.player_money -= new_cannon.cost
                     floor.tower = new_cannon
@@ -133,13 +140,19 @@ class TowerDefense():
             else:
                 self.matrix.connect_vertex_to_all_neighbors(vertex)
                 self.define_road()
-        else:
-            if self.player_money - 100 >= 0:
-                tower = self.selected_floor.tower
-                tower.range += 10
-                tower.fire_time -= 25
-                tower.damage += 0.5
-                self.player_money -= 100
+
+    def player_able_to_buy_tower(self, tower_slug):
+        return self.player_money - self.tower_attributes[tower_slug][6] >= 0
+
+    def upgrade_selected_tower(self):
+        self.selected_floor.tower.upgrade()
+        self.player_money -= 100
+
+    def current_tower_can_be_upgraded(self):
+        return self.selected_floor.tower.current_level < self.max_level_up
+
+    def player_able_to_upgrade_tower(self):
+        return self.player_money - 100 >= 0
 
     def define_road(self):
         vertices = self.matrix.flat_vertices()

@@ -10,8 +10,9 @@ class Gui():
         self.labels = []
         self.screen_bounds = screen_bounds
 
-    def add_button(self, text, position, size, on_click, active_clause, font_size):
-        new_button = Button(text, position, size, on_click, self.drawable, self.font, active_clause, font_size)
+    def add_button(self, text, position, size, on_click, font_size):
+        new_button = Button(text, position, size, font_size)
+        new_button.on_click(on_click)
         self.buttons.append(new_button)
         return(new_button)
 
@@ -22,14 +23,17 @@ class Gui():
 
     def update(self, left_mouse_button_down):
         for button in self.buttons:
-            pos_x, pos_y = self.mouse.get_pos()
-            button.bellow_mouse = button.point_inside_area(pos_x, pos_y)
-            if left_mouse_button_down and button.bellow_mouse:
-                button.click()
+            ## bug in here, buttons been clicked even if not visible
+            if button.is_visible():
+                pos_x, pos_y = self.mouse.get_pos()
+                button.bellow_mouse = button.point_inside_area(pos_x, pos_y)
+                if left_mouse_button_down and button.bellow_mouse:
+                    button.click()
 
     def draw(self, screen):
         for button in self.buttons:
-            button.draw(screen)
+            if button.is_visible():
+                button.draw(screen, self.drawable, self.font)
         for label in self.labels:
             label.draw(screen)
 

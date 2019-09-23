@@ -9,6 +9,7 @@ class Enemy(Character):
         self.path
         self.current_target = self.path[0]
         self.min_distance = 5
+        self.max_hp = hp
         self.current_hp = hp
         self.arrived = False
         self.value = value
