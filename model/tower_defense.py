@@ -7,6 +7,12 @@ from .tower import Tower
 from .enemy import Enemy
 
 class TowerDefense():
+
+    MAP_WIDTH = 12
+    MAP_HEIGHT = 10
+    TOWER_SELLING_PERCENT = 0.5
+    TOWER_UPGRADE_PERCENT = 0.8
+
     def __init__(self, enemy_spawn_vertex, matrix, side_size, map_position):
         self.map_position = map_position
         self.side_size = side_size
@@ -18,7 +24,7 @@ class TowerDefense():
         self.enemies = []
         self.selected_floor = None
         self.towers = []
-        self.current_level = 1
+        self.current_level = 0
         self.player_money = 200
         self.player_lifes = 10
         self.attack_time = 10000
@@ -104,26 +110,15 @@ class TowerDefense():
             new_enemy = Enemy(1, self.enemy_spawn_position, self.side_size, floors_to_target, 3 + extra_hp, 15, 0.1 + extra_speed)
         self.enemies.append(new_enemy)
 
-
-    def can_sell_tower(self):
-        return self.selected_floor is not None and self.selected_floor.tower is not None
-
     def sell_tower(self):
         tower = self.selected_floor.tower
+        self.player_money += tower.current_price * TowerDefense.TOWER_SELLING_PERCENT
         self.towers.remove(tower)
-        self.player_money += 50
         self.matrix.connect_vertex_to_all_neighbors(self.selected_floor.vertex)
         self.define_road()
         self.selected_floor.tower = None
 
-    def can_add_anything(self):
-        no_enemies = not self.any_enemy_alive()
-        pause = not self.attack
-        has_money = self.player_money - 100 >= 0
-        selected_floor = self.selected_floor is not None
-        return no_enemies and pause and selected_floor and has_money
-
-    def add_tower_to_selected_floor(self, tower_name):
+    def buy_tower_to_selected_floor(self, tower_name):
         atr = self.tower_attributes[tower_name]
         if self.selected_floor.tower is None:
             vertex = self.selected_floor.vertex
@@ -132,11 +127,11 @@ class TowerDefense():
             if self.search.path_to_target_exist():
                 floor = self.selected_floor
                 position = (floor.pos_x, floor.pos_y)
-                new_cannon = Tower(atr[0], atr[1], atr[2], atr[3], atr[4], position, self.side_size, atr[6], atr[5])
-                if self.player_money - new_cannon.cost >= 0:
-                    self.player_money -= new_cannon.cost
-                    floor.tower = new_cannon
-                    self.towers.append(new_cannon)
+                new_tower = Tower(atr[0], atr[1], atr[2], atr[3], atr[4], position, self.side_size, atr[6], atr[5])
+                if self.player_money - new_tower.price >= 0:
+                    self.player_money -= new_tower.price
+                    floor.tower = new_tower
+                    self.towers.append(new_tower)
             else:
                 self.matrix.connect_vertex_to_all_neighbors(vertex)
                 self.define_road()
@@ -145,14 +140,20 @@ class TowerDefense():
         return self.player_money - self.tower_attributes[tower_slug][6] >= 0
 
     def upgrade_selected_tower(self):
-        self.selected_floor.tower.upgrade()
-        self.player_money -= 100
+        tower = self.selected_floor.tower
+        upgrade_cost = self.current_tower_upgrade_price()
+        tower.upgrade()
+        tower.increase_price(upgrade_cost)
+        self.player_money -= upgrade_cost
 
     def current_tower_can_be_upgraded(self):
         return self.selected_floor.tower.current_level < self.max_level_up
 
     def player_able_to_upgrade_tower(self):
-        return self.player_money - 100 >= 0
+        return self.player_money - self.current_tower_upgrade_price() >= 0
+
+    def current_tower_upgrade_price(self):
+        return 100 * TowerDefense.TOWER_UPGRADE_PERCENT
 
     def define_road(self):
         vertices = self.matrix.flat_vertices()
@@ -179,3 +180,15 @@ class TowerDefense():
 
     def defeated(self):
         return self.player_lifes <= 0
+
+    def is_there_a_selected_floor_with_tower(self):
+        return self.is_any_floor_selected() and self.does_selected_floor_has_any_tower()
+
+    def is_any_floor_selected(self):
+        return self.selected_floor is not None
+
+    def does_selected_floor_has_any_tower(self):
+        return self.selected_floor.tower is not None
+
+    def selected_tower(self):
+        return self.selected_floor.tower

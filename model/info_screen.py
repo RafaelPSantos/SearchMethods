@@ -25,7 +25,7 @@ class InfoScreen(Screen):
 
     def event_handler(self, event):
         left_mouse_clicked = event.type == self.mouse_button_up and event.button == Screen.MOUSE_LEFT_BUTTON
-        self.gui.update(left_mouse_clicked)
+        self.gui.mouse_handler(left_mouse_clicked)
 
     def draw(self, screen):
         self.gui.draw(screen)

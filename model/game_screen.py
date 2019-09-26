@@ -27,12 +27,12 @@ class GameScreen(Screen):
         def timer():
             timer = ("% 0.1f" % float(self.game.current_time / 1000))
             if self.game.attack:
-                return "Duração do ataque: " + timer + "s"
+                return "Ataque acaba em: " + timer + "s"
             else:
-                return "Proxima invasão em: " + timer + "s"
+                return "Proximo ataque: " + timer + "s"
 
         def level():
-            return "Invasão nº" + str(self.game.current_level)
+            return "Nivel: " + str(self.game.current_level)
 
         def can_jump_pause():
             return not self.game.attack
@@ -53,65 +53,88 @@ class GameScreen(Screen):
                 return self.game.player_able_to_buy_tower(tower_slug)
             return able;
 
+        def allowed_to_sell_anything():
+            return self.game.is_there_a_selected_floor_with_tower() and not self.game.attack
+
         def can_upgrade_a_tower():
-            floor = self.game.selected_floor
-            return floor is not None and floor.tower is not None and self.game.current_tower_can_be_upgraded()
-
-        bottom = screen_size[1] - self.map_square_size / 2
-        left_corner = self.map_square_size / 2
-        right_corner = screen_size[0]
-        button_size = [self.map_square_size, self.map_square_size]
-
-        position = [left_corner, bottom]
-        start_button = self.add_button(">>", jump_pause, position, 24, button_size)
-        start_button.visible_if(can_jump_pause)
-
-        button_size = (60, 60)
-        bottom = screen_size[1] - button_size[0] / 2
-
-        position = [right_corner + button_size[0] / 2, bottom]
-        position[0] -= button_size[0]
-        sell_button = self.add_button("Vender", self.game.sell_tower, position, 12, button_size)
-        sell_button.visible_if(self.game.can_sell_tower)
-
-        position[0] -= button_size[0]
+            has_tower = self.game.is_there_a_selected_floor_with_tower()
+            return has_tower and self.game.current_tower_can_be_upgraded() and not self.game.attack
 
         def add_light_tower():
-            self.game.add_tower_to_selected_floor("light_tower")
+            self.game.buy_tower_to_selected_floor("light_tower")
 
         def add_fire_tower():
-            self.game.add_tower_to_selected_floor("fire_tower")
+            self.game.buy_tower_to_selected_floor("fire_tower")
 
         def add_ice_tower():
-            self.game.add_tower_to_selected_floor("ice_tower")
+            self.game.buy_tower_to_selected_floor("ice_tower")
 
-        upgrade_button = self.add_button("Atualizar", self.game.upgrade_selected_tower, position, 12, button_size)
+        def sell_text():
+            return "vender: $" + str(self.game.selected_tower().current_price * TowerDefense.TOWER_SELLING_PERCENT)
+
+        def upgrade_text():
+            return "Atualizar: $" + str(self.game.selected_tower().current_price * TowerDefense.TOWER_UPGRADE_PERCENT)
+
+        screen_width, screen_height = screen_size
+
+        bottom_of_map = TowerDefense.MAP_HEIGHT * self.map_square_size
+        left_corner = 0
+
+        button_width = self.map_square_size * 2
+        button_height = self.map_square_size
+        button_size = (button_width, button_height)
+
+        start_position = [left_corner, bottom_of_map + self.map_square_size]
+        start_button = self.add_button("Começar invasao", jump_pause, start_position, 12, button_size, False)
+        start_button.visible_if(can_jump_pause)
+
+        sell_position = [screen_width - 2 * button_width, bottom_of_map]
+
+        position = [screen_width, - button_width, bottom_of_map]
+        sell_button = self.add_button(sell_text, self.game.sell_tower, sell_position, 12, button_size, False)
+        sell_button.visible_if(allowed_to_sell_anything)
+
+        up_position = sell_position
+        up_position[0] += button_width
+
+        upgrade_button = self.add_button(upgrade_text, self.game.upgrade_selected_tower, up_position, 12, button_size, False)
         upgrade_button.visible_if(can_upgrade_a_tower)
         upgrade_button.active_if(self.game.player_able_to_upgrade_tower)
 
-        position = [right_corner - button_size[0] * 2 - button_size[0] / 2, bottom]
+        light_position = [screen_width - 2 * button_width, bottom_of_map]
 
-        light_tower_button = self.add_button(add_tower("Raio", "light_tower"), add_light_tower, position, 12, button_size)
+        light_tower_button = self.add_button(add_tower("Raio", "light_tower"), add_light_tower, light_position, 12, button_size, False)
         light_tower_button.visible_if(allowed_to_buy_anything)
         light_tower_button.active_if(able_to_buy("light_tower"))
-        position[0] -= button_size[0]
 
-        ice_tower_button = self.add_button(add_tower("Fogo", "fire_tower"), add_fire_tower, position, 12, button_size)
+        fire_position = light_position
+        fire_position[0] += button_width
+
+        ice_tower_button = self.add_button(add_tower("Fogo", "fire_tower"), add_fire_tower, fire_position, 12, button_size, False)
         ice_tower_button.visible_if(allowed_to_buy_anything)
         ice_tower_button.active_if(able_to_buy("fire_tower"))
-        position[0] -= button_size[0]
 
-        fire_tower_button = self.add_button(add_tower("Gelo", "ice_tower"), add_ice_tower, position, 12, button_size)
+        ice_position = fire_position
+        ice_position[1] += button_height
+
+        fire_tower_button = self.add_button(add_tower("Gelo", "ice_tower"), add_ice_tower, ice_position, 12, button_size, False)
         fire_tower_button.visible_if(allowed_to_buy_anything)
         fire_tower_button.active_if(able_to_buy("ice_tower"))
 
+        current_level_position = start_position
+        current_level_position[1] -= button_height
+        level_label = self.add_label(level, 20, current_level_position, False, Color.WHITE)
+
+        timer_position = current_level_position
+        # timer_position[1] += level_label.size()[1]
+        self.add_label(timer, 12, timer_position, False, Color.WHITE)
+
+        lifes_position = [screen_width / 2, bottom_of_map + 20]
+        self.add_label(lifes, 22, lifes_position, True, Color.RED)
         self.add_label(score, 18, [0, 20], False, Color.YELLOW)
-        self.add_label(lifes, 18, [520, 20], False, Color.RED)
-        self.add_label(timer, 20, [300, 20], True, Color.WHITE)
-        self.add_label(level, 20, [300, 560], True, Color.WHITE)
 
     def start_matrix(self):
-        self.matrix = Matrix(12, 10)
+        self.matrix = Matrix(TowerDefense.MAP_WIDTH, TowerDefense.MAP_HEIGHT)
         self.matrix.connect_all_vertices()
         vertices = self.matrix.flat_vertices()
         self.matrix.select_targets(vertices[0])
@@ -130,7 +153,7 @@ class GameScreen(Screen):
                     else:
                         self.game.selected_floor = floor
                     break
-        self.gui.update(left_mouse_clicked)
+        self.gui.mouse_handler(left_mouse_clicked)
 
     def update(self, dt):
         self.game.update(dt)
@@ -141,8 +164,8 @@ class GameScreen(Screen):
     def draw(self, screen):
         self.draw_floor(screen)
         self.draw_roads(screen)
-        self.draw_towers(screen)
         self.draw_selected_floor(screen)
+        self.draw_towers(screen)
         self.draw_enemies(screen)
         self.gui.draw(screen)
         for tower in self.game.towers:
@@ -172,15 +195,11 @@ class GameScreen(Screen):
             self.gui.drawable.rect(screen, Color.BLACK, floor.rec(), 1)
 
     def draw_selected_floor(self, screen):
-        if self.game.selected_floor is not None:
-            for floor in self.game.floors:
-                vertex = floor.vertex
-                position = floor.position()
-                if floor == self.game.selected_floor:
-                    self.gui.drawable.rect(screen, Color.WHITE, floor.rec(), 1)
-                    if floor.tower is not None:
-                        self.gui.drawable.circle(screen, Color.GREEN, position, floor.tower.range, 1)
-                    break
+        if self.game.is_any_floor_selected():
+            floor = self.game.selected_floor
+            self.gui.drawable.rect(screen, Color.WHITE, floor.rec(), 2)
+            if floor.tower is not None:
+                self.gui.drawable.circle(screen, Color.GREEN, floor.position(), floor.tower.range, 1)
 
     def draw_towers(self, screen):
         level_margim = 1

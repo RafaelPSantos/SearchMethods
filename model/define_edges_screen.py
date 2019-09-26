@@ -48,7 +48,8 @@ class DefineEdgesScreen(Screen):
 
         bottom = screen_size[1] - 50
         self.add_button("Voltar", back_to_edit_size, [70, bottom])
-        self.add_button("Usar Diijkstra", self.start_search, [screen_size[0] / 2, bottom], can_search_path)
+        use_diijkistra_button = self.add_button("Usar Diijkstra", self.start_search, [screen_size[0] / 2, bottom])
+        use_diijkistra_button.active_if(can_search_path)
 
     def event_handler(self, event):
         left_button_click = False
@@ -76,7 +77,7 @@ class DefineEdgesScreen(Screen):
                         self.vertices_join = []
             elif event.button == Screen.MOUSE_RIGHT_BUTTON and vertex is not None:
                 self.matrix.select_targets(vertex)
-        self.gui.update(left_button_click)
+        self.gui.mouse_handler(left_button_click)
 
     def draw(self, screen):
         self.draw_edges(screen)

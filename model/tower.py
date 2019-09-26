@@ -5,14 +5,15 @@ from .magic_line import MagicLine
 from .color import Color
 
 class Tower(Character):
-    def __init__(self, sprite, damage, range, fire_time, effect, position, side_size, cost, attack_color = Color.LIGHT_BLUE):
+    def __init__(self, sprite, damage, range, fire_time, effect, position, side_size, price, attack_color = Color.LIGHT_BLUE):
         super().__init__(sprite, position, side_size)
         self.damage = damage
         self.range = range
         self.target = None
         self.fire_time = fire_time
         self.current_time = 0
-        self.cost = cost
+        self.price = price
+        self.current_price = price
         self.magic_lines = []
         self.attack_color = attack_color
         self.current_level = 1
@@ -63,5 +64,7 @@ class Tower(Character):
         self.fire_time -= 25
         self.damage += 0.5
         self.current_level += 1
-        
+    
+    def increase_price(self, extra_price):
+        self.current_price += extra_price
 

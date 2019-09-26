@@ -30,7 +30,7 @@ class EditMatrixScreen(Screen):
             if not left_button_click:
                 self.matrix.initialize_vertex(self.current_matrix_size, self.current_matrix_size, True)
                 self.settings["current_screen"] += 1
-        self.gui.update(left_button_click)
+        self.gui.mouse_handler(left_button_click)
 
     def draw(self, screen):
         self.gui.draw(screen)

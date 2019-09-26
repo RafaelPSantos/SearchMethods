@@ -1,14 +1,15 @@
-class Button():
-    def __init__(self, text, pos, size, font_size):
+from .color import Color
+from .element import Element
+
+class Button(Element):
+    def __init__(self, text, position, size, font_size, centralized_position = True):
+        super().__init__(position, size)
         self.text = text
-        self.pos_x = pos[0]
-        self.pos_y = pos[1]
-        self.width = size[0]
-        self.height = size[1]
         self.action = None
         self.bellow_mouse = False
         self.font_size = font_size
         self.visible_clause = None
+        self.centralized = centralized_position
 
     def click(self):
         if self.is_active():
@@ -16,48 +17,39 @@ class Button():
             self.action()
 
     def draw(self, screen, drawable, font):
-        white = (255, 255, 255)
+        color = Color.WHITE
+        if not self.is_active():
+            color = Color.DISABLED_COLOR
         black = (0, 0, 0)
-        rec = (self.left_margin(), self.top_margin(), self.width, self.height)
+
+        rec = self.rec(self.centralized)
         font = font.SysFont("arial", self.font_size)
 
         text_color = None
         if self.bellow_mouse and self.is_active():
             text_color = black
-            drawable.rect(screen, white, rec)
+            drawable.rect(screen, color, rec)
         else:
-            text_color = white
-            drawable.rect(screen, white, rec, 1)
+            text_color = color
+            drawable.rect(screen, color, rec, 1)
 
         label = None
         if isinstance(self.text, str):
             label = font.render(self.text, 1, text_color)
         else:
             label = font.render(self.text(), 1, text_color)
-        
+
         text_size = label.get_rect()
-        text_pos = (self.pos_x - text_size.width / 2, self.pos_y - text_size.height / 2)
+        center_pos_x, center_pos_y = self.center_of_rec(self.centralized)
+        text_pos_x = center_pos_x - text_size.width / 2
+        text_pos_y = center_pos_y - text_size.height / 2
+        text_pos = (text_pos_x, text_pos_y)
         screen.blit(label, text_pos)
 
-    def left_margin(self):
-        pos_x = self.current_position()[0]
-        return pos_x - self.width / 2
-
-    def right_margin(self):
-        pos_x = self.current_position()[0]
-        return pos_x + self.width / 2
-
-    def top_margin(self):
-        pos_y = self.current_position()[1]
-        return pos_y - self.height / 2
-
-    def bottom_margin(self):
-        pos_y = self.current_position()[1]
-        return pos_y + self.height / 2
-
     def point_inside_area(self, pos_x, pos_y):
-        inside_width = pos_x > self.left_margin() and pos_x < self.right_margin()
-        inside_height = pos_y < self.bottom_margin() and pos_y > self.top_margin()
+        rec_pos_x, rec_pos_y, rec_width, rec_height = self.rec(self.centralized)
+        inside_width = rec_pos_x < pos_x and pos_x < (rec_pos_x + rec_width)
+        inside_height = rec_pos_y < pos_y and pos_y < (rec_pos_y + rec_height)
         return inside_width and inside_height
 
     def current_position(self):

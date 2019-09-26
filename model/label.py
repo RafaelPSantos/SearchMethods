@@ -1,13 +1,14 @@
-class Label():
-    def __init__(self, text, position, pyfontfont, font_size, centralized, text_color):
-        self.text = text
-        self.pos_x = position[0]
-        self.pos_y = position[1]
+from .element import Element
+
+class Label(Element):
+    def __init__(self, text, position, pyfontfont, font_size, text_color, centralized_position = False):
         self.font = pyfontfont.SysFont("arial", font_size)
-        self.text_color = text_color
         self.label = self.font.render("", 1, text_color)
-        self.centralized = centralized
+        super().__init__(position, self.label.get_rect())
+        self.text = text
+        self.text_color = text_color
         self.last_text = "a"
+        self.centralized = centralized_position
 
     def draw(self, screen):
         text = ""
@@ -17,11 +18,11 @@ class Label():
             text = self.text()
         if text != self.last_text:
             self.label = self.font.render(text, 1, self.text_color)
-        position = [self.pos_x , self.pos_y]
+        position = self.top_left_corner_point()
         if self.centralized:
-            position[0] -= (self.size().width / 2)
-            position[1] -= (self.size().height / 2)
+            position = self.center_point()
         screen.blit(self.label, position)
 
     def size(self):
-        return self.label.get_rect()
+        size = self.label.get_rect()
+        return (size.width, size.height)
