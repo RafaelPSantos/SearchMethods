@@ -1,8 +1,8 @@
 from .character import Character
 
 class Floor(Character):
-    def __init__(self, sprite, vertex, side_size, position):
-        super().__init__(sprite, position, side_size)
+    def __init__(self, animation, vertex, side_size, position):
+        super().__init__(animation, position, side_size)
         self.vertex = vertex
         self.tower = None
 

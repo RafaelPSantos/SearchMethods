@@ -5,6 +5,9 @@ from .vertex import Vertex
 from .floor import Floor
 from .tower import Tower
 from .enemy import Enemy
+from .animation import Animation
+from .slow_down_effect import SlowDownEffect
+from .burn_effect import BurnEffect
 
 class TowerDefense():
 
@@ -20,7 +23,8 @@ class TowerDefense():
         self.matrix = matrix
         self.floors = []
         for vertex in self.matrix.flat_vertices():
-            self.floors.append(Floor(14, vertex, self.side_size, self.vertex_position_according_map(vertex)))
+            floor_animation = Animation([12])
+            self.floors.append(Floor(floor_animation, vertex, self.side_size, self.vertex_position_according_map(vertex)))
         self.enemies = []
         self.selected_floor = None
         self.towers = []
@@ -40,9 +44,18 @@ class TowerDefense():
         self.define_road()
 
         self.tower_attributes = {}
-        self.tower_attributes["light_tower"] = [12, 0.1, 150, 80, None, Color.YELLOW, 80]
-        self.tower_attributes["ice_tower"] = [12, 1, 50, 500, None, Color.LIGHT_BLUE, 100]
-        self.tower_attributes["fire_tower"] = [12, 3, 100, 850, None, Color.RED, 150]
+        tower_animation = Animation([12])
+        one_sec = 1000
+
+        def slow_down(enemy):
+            return SlowDownEffect(enemy)
+
+        def burn(enemy):
+            return BurnEffect(enemy)
+
+        self.tower_attributes["light_tower"] = [tower_animation, 0.1, 150, 80, None, Color.YELLOW, 80, None]
+        self.tower_attributes["ice_tower"] = [tower_animation, 0.5, 80, 600, None, Color.LIGHT_BLUE, 100, slow_down]
+        self.tower_attributes["fire_tower"] = [tower_animation, 1, 100, 1000, None, Color.RED, 150, burn]
         self.max_level_up = 3
 
     def update(self, dt):
@@ -99,15 +112,18 @@ class TowerDefense():
                 floors_to_target.append(floor)
         extra_speed = self.current_level / 200
         extra_hp = int(self.current_level / 10)
-        sheet_size = 50
+        sprite_time = 300
         if self.current_attack_strength - 2  > 0:
             self.current_attack_strength -= 1
-            new_enemy = Enemy(5, self.enemy_spawn_position, self.side_size, floors_to_target, 10 + extra_hp, 150, 0.05 + extra_speed)
+            animation = Animation([4, 5], sprite_time)
+            new_enemy = Enemy(animation, self.enemy_spawn_position, self.side_size, floors_to_target, 10 + extra_hp, 150, 0.05 + extra_speed)
         elif self.current_attack_strength - 1  > 0:
             self.current_attack_strength -= 0.5
-            new_enemy = Enemy(3, self.enemy_spawn_position, self.side_size, floors_to_target, 5 + extra_hp, 50, 0.15 + extra_speed)
+            animation = Animation([2, 3], sprite_time)
+            new_enemy = Enemy(animation, self.enemy_spawn_position, self.side_size, floors_to_target, 5 + extra_hp, 50, 0.15 + extra_speed)
         else:
-            new_enemy = Enemy(1, self.enemy_spawn_position, self.side_size, floors_to_target, 3 + extra_hp, 15, 0.1 + extra_speed)
+            animation = Animation([0, 1], sprite_time)
+            new_enemy = Enemy(animation, self.enemy_spawn_position, self.side_size, floors_to_target, 3 + extra_hp, 15, 0.1 + extra_speed)
         self.enemies.append(new_enemy)
 
     def sell_tower(self):
@@ -128,6 +144,7 @@ class TowerDefense():
                 floor = self.selected_floor
                 position = (floor.pos_x, floor.pos_y)
                 new_tower = Tower(atr[0], atr[1], atr[2], atr[3], atr[4], position, self.side_size, atr[6], atr[5])
+                new_tower.add_special_effect(atr[7])
                 if self.player_money - new_tower.price >= 0:
                     self.player_money -= new_tower.price
                     floor.tower = new_tower

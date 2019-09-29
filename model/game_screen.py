@@ -165,23 +165,24 @@ class GameScreen(Screen):
         self.draw_floor(screen)
         self.draw_roads(screen)
         self.draw_selected_floor(screen)
-        self.draw_towers(screen)
         self.draw_enemies(screen)
+        self.draw_towers(screen)
         self.gui.draw(screen)
-        for tower in self.game.towers:
-            tower.draw(screen)
 
     def draw_enemies(self, screen):
         life_bar_height = 5
+        effect_bar_height = 2
+        enemy_foot_margin = 2
         for enemy in self.game.enemies:
             pos_x, pos_y = enemy.sprite_position()
-            self.sheet.draw(screen, enemy.sprite, pos_x, pos_y, False)
-            life_bar_max_width = enemy.side_size
-            life_bar_width = enemy.current_hp * (life_bar_max_width / enemy.max_hp)
-            life_bar_pos_x = pos_x
-            life_bar_pos_y = pos_y + enemy.side_size - life_bar_height
-            max_rec = (life_bar_pos_x, life_bar_pos_y, life_bar_max_width, life_bar_height)
-            current_rec = (life_bar_pos_x, life_bar_pos_y, life_bar_width, life_bar_height)
+            self.sheet.draw(screen, enemy.animation.sprite(), pos_x, pos_y, False)
+            bar_max_width = enemy.side_size
+            life_bar_width = enemy.current_hp * (bar_max_width / enemy.max_hp)
+            bar_pos_x = pos_x
+            bar_pos_y = pos_y + enemy.side_size + enemy_foot_margin
+            max_rec = (bar_pos_x, bar_pos_y, bar_max_width, life_bar_height)
+
+            current_rec = (bar_pos_x, bar_pos_y, life_bar_width, life_bar_height)
             self.gui.drawable.rect(screen, Color.RED, max_rec)
             self.gui.drawable.rect(screen, Color.GREEN, current_rec)
 
@@ -206,8 +207,10 @@ class GameScreen(Screen):
         for tower in self.game.towers:
             level_box_size = 6
             pos_x, pos_y = tower.sprite_position()
-            self.sheet.draw(screen, tower.sprite, pos_x, pos_y, False)
+            self.sheet.draw(screen, tower.animation.sprite(), pos_x, pos_y, False)
             level_box_pos_y = pos_y + tower.side_size - level_box_size
+            for line in tower.magic_lines:
+                line.draw(screen)
             for level in range(tower.current_level):
                 level_box_pos_x = pos_x + (level_box_size * level) + level_margim * level
                 rec = (level_box_pos_x, level_box_pos_y, level_box_size, level_box_size)

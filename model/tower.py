@@ -5,8 +5,8 @@ from .magic_line import MagicLine
 from .color import Color
 
 class Tower(Character):
-    def __init__(self, sprite, damage, range, fire_time, effect, position, side_size, price, attack_color = Color.LIGHT_BLUE):
-        super().__init__(sprite, position, side_size)
+    def __init__(self, animation, damage, range, fire_time, effect, position, side_size, price, attack_color = Color.LIGHT_BLUE):
+        super().__init__(animation, position, side_size)
         self.damage = damage
         self.range = range
         self.target = None
@@ -17,6 +17,7 @@ class Tower(Character):
         self.magic_lines = []
         self.attack_color = attack_color
         self.current_level = 1
+        self.effect = None
 
     def update(self, dt):
         new_lines = []
@@ -32,10 +33,6 @@ class Tower(Character):
         else:
             self.colling_down(dt)
 
-    def draw(self, screen):
-        for line in self.magic_lines:
-            line.draw(screen)
-
     def on_range_of(self, enemy):
         pos_x, pos_y = enemy.pos_x, enemy.pos_y
         distance = math.sqrt((self.pos_x - pos_x) ** 2 + (self.pos_y - pos_y) ** 2)
@@ -43,7 +40,8 @@ class Tower(Character):
 
     def fire(self, target):
         self.cool_down()
-        self.target.damage(self.damage)
+        new_effect = self.special_effect(self.target)
+        self.target.damage(self.damage, new_effect)
         new_line = MagicLine((self.pos_x, self.pos_y - 15), (self.target.pos_x, self.target.pos_y), self.attack_color, 5)
         self.magic_lines.append(new_line)
 
@@ -67,4 +65,11 @@ class Tower(Character):
     
     def increase_price(self, extra_price):
         self.current_price += extra_price
+
+    def add_special_effect(self, effect):
+        if effect is not None:
+            self.special_effect = effect
+
+    def special_effect(self, enemy):
+        return None
 

@@ -31,6 +31,7 @@ class Gui():
                 button.bellow_mouse = button.point_inside_area(pos_x, pos_y)
                 if left_mouse_button_down and button.bellow_mouse:
                     button.click()
+                    break
 
     def draw(self, screen):
         for button in self.buttons:

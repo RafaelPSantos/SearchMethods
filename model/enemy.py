@@ -3,8 +3,8 @@ import math
 from .character import Character
 
 class Enemy(Character):
-    def __init__(self, sprite, position, side_size, path_to_target, hp = 5, value = 10, speed = 0.5):
-        super().__init__(sprite, position, side_size)
+    def __init__(self, animation, position, side_size, path_to_target, hp = 5, value = 10, speed = 0.5):
+        super().__init__(animation, position, side_size)
         self.path = path_to_target
         self.path
         self.current_target = self.path[0]
@@ -14,8 +14,10 @@ class Enemy(Character):
         self.arrived = False
         self.value = value
         self.speed = speed
+        self.debuffs = []
 
     def update(self, dt):
+        self.animation.update(dt)
         self.arrived = self.current_target is None
         if self.arrived:
             return
@@ -23,6 +25,13 @@ class Enemy(Character):
 
         if self.over_target():
             self.next_target()
+
+        new_debuff_list = []
+        for debuff in self.debuffs:
+            debuff.update(dt)
+            if not debuff.effect_pass():
+                new_debuff_list.append(debuff)
+        self.debuffs = new_debuff_list
 
     def move(self, dt):
         speed = self.speed
@@ -56,8 +65,16 @@ class Enemy(Character):
             self.current_target = None
         
 
-    def damage(self, damage):
+    def damage(self, damage, debuff = None):
         self.current_hp -= damage
+        if debuff is not None and not self.already_has_a_debuff(debuff.__class__):
+            self.debuffs.append(debuff)
+
+    def already_has_a_debuff(self, type_of_debuff):
+        for debuff in self.debuffs:
+            if isinstance(debuff, type_of_debuff):
+                return True
+        return False
 
     def is_alive(self):
         return self.current_hp > 0

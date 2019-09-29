@@ -12,7 +12,7 @@ class Button(Element):
         self.centralized = centralized_position
 
     def click(self):
-        if self.is_active():
+        if self.is_active() and self.is_visible():
             self.bellow_mouse = False
             self.action()
 
