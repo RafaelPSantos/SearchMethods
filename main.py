@@ -39,7 +39,7 @@ def main():
     global game_Screen
     global settings
     settings["running"] = True
-    settings["current_screen"] = GAME_SCREEN
+    settings["current_screen"] = START_SCREEN
 
     pygame.init()
     pygame.font.init()
