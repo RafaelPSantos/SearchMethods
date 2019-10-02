@@ -15,13 +15,16 @@ class MainMenuScreen(Screen):
         def quit_game():
             settings["running"] = False
 
+        def disabled_button():
+            return False
+
         self.add_label("SEARCH METHODS TD", Screen.TITLE_SIZE, pos)
         pos[1] += 50
         self.add_button("Jogar", start_game, pos)
         pos[1] += 50
         self.add_button("Testar Diijkstra", go_to_diikjistra, pos)
         pos[1] += 50
-        self.add_button("Configurações", 1, pos)
+        self.add_button("Configurações", 1, pos).active_if(disabled_button)
         pos[1] += 50
         self.add_button("Sair", quit_game, pos)
         pos[1] += 50

@@ -22,7 +22,7 @@ class Tower(Character):
         self.magic_lines = []
         self.attack_color = attributes.get('attack_color') or Color.LIGHT_BLUE
         self.current_level = 1
-        self.effect = attributes.get('effect')
+        self.add_special_effect(attributes.get('effect'))
 
     def update(self, dt):
         new_lines = []

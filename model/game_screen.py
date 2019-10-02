@@ -13,7 +13,7 @@ class GameScreen(Screen):
         self.vertex_distance = self.map_square_size
         self.map_position = (0, 0)
         self.start_matrix()
-        self.game = TowerDefense(self.matrix.find_entrace_vertice(), self.matrix, self.sheet.cellWidth, self.map_position)
+        self.game = TowerDefense(self.matrix, self.sheet.cellWidth, self.map_position)
         self.settings = settings
 
         self.reset_game()
@@ -131,7 +131,8 @@ class GameScreen(Screen):
 
         lifes_position = [screen_width / 2, bottom_of_map + 20]
         self.add_label(lifes, 22, lifes_position, True, Color.RED)
-        self.add_label(score, 18, [0, 20], False, Color.YELLOW)
+        lifes_position[1] += 20
+        self.add_label(score, 18, lifes_position, True, Color.YELLOW)
 
     def start_matrix(self):
         self.matrix = Matrix(TowerDefense.MAP_WIDTH, TowerDefense.MAP_HEIGHT)
@@ -141,7 +142,7 @@ class GameScreen(Screen):
         self.matrix.select_targets(vertices[len(vertices)-1])
 
     def reset_game(self):
-        self.game = TowerDefense(self.matrix.find_entrace_vertice(), self.matrix, self.sheet.cellWidth, self.map_position)
+        self.game = TowerDefense(self.matrix, self.sheet.cellWidth, self.map_position)
 
     def mouse_event_handler(self, event):
         left_mouse_clicked = event.type == self.mouse_button_up and event.button == Screen.MOUSE_LEFT_BUTTON
@@ -167,9 +168,9 @@ class GameScreen(Screen):
     def draw(self, screen):
         self.draw_floor(screen)
         self.draw_roads(screen)
-        self.draw_selected_floor(screen)
         self.draw_enemies(screen)
         self.draw_towers(screen)
+        self.draw_selected_floor(screen)
         self.gui.draw(screen)
 
     def draw_enemies(self, screen):
@@ -211,6 +212,7 @@ class GameScreen(Screen):
             level_box_size = 6
             pos_x, pos_y = tower.sprite_position()
             self.sheet.draw(screen, tower.animation.sprite(), pos_x, pos_y, False)
+        for tower in self.game.towers:
             level_box_pos_y = pos_y + tower.side_size - level_box_size
             for line in tower.magic_lines:
                 line.draw(screen)

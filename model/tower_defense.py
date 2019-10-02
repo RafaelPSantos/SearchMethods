@@ -15,10 +15,10 @@ class TowerDefense():
     MAP_WIDTH = 12
     MAP_HEIGHT = 10
 
-    def __init__(self, enemy_spawn_vertex, matrix, side_size, map_position):
+    def __init__(self, matrix, side_size, map_position):
         self.map_position = map_position
         self.side_size = side_size
-        self.enemy_spawn_position = self.vertex_position_according_map(enemy_spawn_vertex)
+        self.enemy_spawn_position = self.vertex_position_according_map(matrix.find_entrace_vertice())
         self.matrix = matrix
         self.floors = []
         for vertex in self.matrix.flat_vertices():
