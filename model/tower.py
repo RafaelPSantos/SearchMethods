@@ -5,19 +5,24 @@ from .magic_line import MagicLine
 from .color import Color
 
 class Tower(Character):
-    def __init__(self, animation, damage, range, fire_time, effect, position, side_size, price, attack_color = Color.LIGHT_BLUE):
-        super().__init__(animation, position, side_size)
-        self.damage = damage
-        self.range = range
+
+    TOWER_SELLING_PERCENT = 0.5
+    TOWER_UPGRADE_PERCENT = 0.8
+    MAX_LEVEL = 3
+
+    def __init__(self, position, side_size, **attributes):
+        super().__init__(attributes.get('animation'), position, side_size)
+        self.damage = attributes.get('damage') or 1
+        self.range = attributes.get('range') or 100
         self.target = None
-        self.fire_time = fire_time
+        self.fire_time = attributes.get('fire_time') or 1
         self.current_time = 0
-        self.price = price
-        self.current_price = price
+        self.price = attributes.get('price') or 0
+        self.current_price = self.price
         self.magic_lines = []
-        self.attack_color = attack_color
+        self.attack_color = attributes.get('attack_color') or Color.LIGHT_BLUE
         self.current_level = 1
-        self.effect = None
+        self.effect = attributes.get('effect')
 
     def update(self, dt):
         new_lines = []
@@ -62,7 +67,13 @@ class Tower(Character):
         self.fire_time -= 25
         self.damage += 0.5
         self.current_level += 1
-    
+
+    def upgrade_price(self):
+        return int(self.current_price * Tower.TOWER_UPGRADE_PERCENT)
+
+    def selling_price(self):
+        return int(self.current_price * Tower.TOWER_SELLING_PERCENT)
+
     def increase_price(self, extra_price):
         self.current_price += extra_price
 
@@ -72,4 +83,3 @@ class Tower(Character):
 
     def special_effect(self, enemy):
         return None
-

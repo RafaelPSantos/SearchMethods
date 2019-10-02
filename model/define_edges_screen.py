@@ -51,7 +51,7 @@ class DefineEdgesScreen(Screen):
         use_diijkistra_button = self.add_button("Usar Diijkstra", self.start_search, [screen_size[0] / 2, bottom])
         use_diijkistra_button.active_if(can_search_path)
 
-    def event_handler(self, event):
+    def mouse_event_handler(self, event):
         left_button_click = False
         if event.type == self.mouse_button_up:
             left_button_click = event.button == Screen.MOUSE_LEFT_BUTTON

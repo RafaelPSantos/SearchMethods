@@ -83,7 +83,9 @@ def main():
         for event in pygame.event.get():
             pressed = pygame.key.get_pressed()
             settings["running"] = not (event.type == pygame.QUIT or pressed[pygame.K_ESCAPE])
-            current.event_handler(event)
+            current.mouse_event_handler(event)
+            if event.type == pygame.KEYDOWN:
+                current.keyboard_event_handler(pygame.key.name(event.key))
 
         screen.fill(Color.BLACK)
         current.draw(screen)

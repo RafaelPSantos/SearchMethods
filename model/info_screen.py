@@ -23,7 +23,7 @@ class InfoScreen(Screen):
         self.add_button("Começar", play, [screen_size[0] - 70, bottom])
 
 
-    def event_handler(self, event):
+    def mouse_event_handler(self, event):
         left_mouse_clicked = event.type == self.mouse_button_up and event.button == Screen.MOUSE_LEFT_BUTTON
         self.gui.mouse_handler(left_mouse_clicked)
 

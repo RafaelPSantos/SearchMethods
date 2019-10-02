@@ -25,5 +25,8 @@ class Screen():
     def update(self, dt):
         pass
 
-    def event_handler(self, event):
+    def mouse_event_handler(self, event):
+        pass
+
+    def keyboard_event_handler(self, key):
         pass

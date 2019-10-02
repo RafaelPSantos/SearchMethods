@@ -8,13 +8,12 @@ from .enemy import Enemy
 from .animation import Animation
 from .slow_down_effect import SlowDownEffect
 from .burn_effect import BurnEffect
+from .cheat import Cheat
 
 class TowerDefense():
 
     MAP_WIDTH = 12
     MAP_HEIGHT = 10
-    TOWER_SELLING_PERCENT = 0.5
-    TOWER_UPGRADE_PERCENT = 0.8
 
     def __init__(self, enemy_spawn_vertex, matrix, side_size, map_position):
         self.map_position = map_position
@@ -53,10 +52,47 @@ class TowerDefense():
         def burn(enemy):
             return BurnEffect(enemy)
 
-        self.tower_attributes["light_tower"] = [tower_animation, 0.1, 150, 80, None, Color.YELLOW, 80, None]
-        self.tower_attributes["ice_tower"] = [tower_animation, 0.5, 80, 600, None, Color.LIGHT_BLUE, 100, slow_down]
-        self.tower_attributes["fire_tower"] = [tower_animation, 1, 100, 1000, None, Color.RED, 150, burn]
-        self.max_level_up = 3
+        self.tower_attributes = {
+            'light_tower': {
+                'animation': tower_animation,
+                'damage': 0.1,
+                'range': 150,
+                'fire_time': 80,
+                'effect': None,
+                'price': 80,
+                'attack_color': Color.YELLOW
+            },
+            'ice_tower': {
+                'animation': tower_animation,
+                'damage': 0.5,
+                'range': 80,
+                'fire_time': 600,
+                'effect': slow_down,
+                'price': 100,
+                'attack_color': Color.LIGHT_BLUE
+            },
+            'fire_tower': {
+                'animation': tower_animation,
+                'damage': 1,
+                'range': 100,
+                'fire_time': 1000,
+                'effect': burn,
+                'price': 150,
+                'attack_color': Color.RED
+            },
+        }
+        
+        self.cheats = []
+
+        def give_player_credits():
+            self.player_money += 99999
+
+        self.cheats.append(Cheat('money', give_player_credits))
+
+        def give_player_lifes():
+            self.player_lifes += 100
+
+        self.cheats.append(Cheat('lifes', give_player_lifes))
 
     def update(self, dt):
         if self.current_time > 0:
@@ -102,6 +138,16 @@ class TowerDefense():
                 else:
                     self.player_money += enemy.value
         self.enemies = new_enemy_list
+        for cheat in self.cheats:
+            cheat.update(dt);
+
+    def key_input_handler(self, key):
+        for cheat in self.cheats:
+            cheat.update_code(key)
+            if cheat.correct_code_inserted():
+                for unused_cheat in self.cheats:
+                    unused_cheat.reset()
+                return
 
     def spawn_enemy(self):
         path_to_target = self.search.path_to_target()
@@ -128,14 +174,13 @@ class TowerDefense():
 
     def sell_tower(self):
         tower = self.selected_floor.tower
-        self.player_money += tower.current_price * TowerDefense.TOWER_SELLING_PERCENT
+        self.player_money += tower.selling_price()
         self.towers.remove(tower)
         self.matrix.connect_vertex_to_all_neighbors(self.selected_floor.vertex)
         self.define_road()
         self.selected_floor.tower = None
 
     def buy_tower_to_selected_floor(self, tower_name):
-        atr = self.tower_attributes[tower_name]
         if self.selected_floor.tower is None:
             vertex = self.selected_floor.vertex
             self.matrix.desconnect_vertex_from_everyone(vertex)
@@ -143,8 +188,7 @@ class TowerDefense():
             if self.search.path_to_target_exist():
                 floor = self.selected_floor
                 position = (floor.pos_x, floor.pos_y)
-                new_tower = Tower(atr[0], atr[1], atr[2], atr[3], atr[4], position, self.side_size, atr[6], atr[5])
-                new_tower.add_special_effect(atr[7])
+                new_tower = Tower(position, self.side_size, **self.tower_attributes[tower_name])
                 if self.player_money - new_tower.price >= 0:
                     self.player_money -= new_tower.price
                     floor.tower = new_tower
@@ -154,7 +198,7 @@ class TowerDefense():
                 self.define_road()
 
     def player_able_to_buy_tower(self, tower_slug):
-        return self.player_money - self.tower_attributes[tower_slug][6] >= 0
+        return self.player_money - self.tower_attributes[tower_slug]['price'] >= 0
 
     def upgrade_selected_tower(self):
         tower = self.selected_floor.tower
@@ -164,13 +208,13 @@ class TowerDefense():
         self.player_money -= upgrade_cost
 
     def current_tower_can_be_upgraded(self):
-        return self.selected_floor.tower.current_level < self.max_level_up
+        return self.selected_floor.tower.current_level < Tower.MAX_LEVEL
 
     def player_able_to_upgrade_tower(self):
         return self.player_money - self.current_tower_upgrade_price() >= 0
 
     def current_tower_upgrade_price(self):
-        return 100 * TowerDefense.TOWER_UPGRADE_PERCENT
+        return self.selected_floor.tower.upgrade_price()
 
     def define_road(self):
         vertices = self.matrix.flat_vertices()

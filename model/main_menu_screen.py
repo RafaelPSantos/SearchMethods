@@ -28,7 +28,7 @@ class MainMenuScreen(Screen):
         self.add_label("Criado por Caio Santos e Rafael Pereira", 12, [0, screen_size[1] - 14], False)
 
 
-    def event_handler(self, event):
+    def mouse_event_handler(self, event):
         left_mouse_clicked = event.type == self.mouse_button_up and event.button == Screen.MOUSE_LEFT_BUTTON
         self.gui.mouse_handler(left_mouse_clicked)
 

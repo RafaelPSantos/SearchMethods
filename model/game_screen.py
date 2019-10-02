@@ -42,7 +42,7 @@ class GameScreen(Screen):
 
         def add_tower(tower_name, tower_slug):
             tower = self.game.tower_attributes[tower_slug]
-            return tower_name + " $" +str(tower[6])
+            return tower_name + " $" +str(tower['price'])
 
         def allowed_to_buy_anything():
             floor = self.game.selected_floor
@@ -70,10 +70,10 @@ class GameScreen(Screen):
             self.game.buy_tower_to_selected_floor("ice_tower")
 
         def sell_text():
-            return "vender: $" + str(self.game.selected_tower().current_price * TowerDefense.TOWER_SELLING_PERCENT)
+            return "vender: $" + str(self.game.selected_tower().selling_price())
 
         def upgrade_text():
-            return "Atualizar: $" + str(self.game.selected_tower().current_price * TowerDefense.TOWER_UPGRADE_PERCENT)
+            return "Atualizar: $" + str(self.game.selected_tower().upgrade_price())
 
         screen_width, screen_height = screen_size
 
@@ -143,7 +143,7 @@ class GameScreen(Screen):
     def reset_game(self):
         self.game = TowerDefense(self.matrix.find_entrace_vertice(), self.matrix, self.sheet.cellWidth, self.map_position)
 
-    def event_handler(self, event):
+    def mouse_event_handler(self, event):
         left_mouse_clicked = event.type == self.mouse_button_up and event.button == Screen.MOUSE_LEFT_BUTTON
         if left_mouse_clicked:
             for floor in self.game.floors:
@@ -154,6 +154,9 @@ class GameScreen(Screen):
                         self.game.selected_floor = floor
                     break
         self.gui.mouse_handler(left_mouse_clicked)
+
+    def keyboard_event_handler(self, key):
+        self.game.key_input_handler(key)
 
     def update(self, dt):
         self.game.update(dt)
